@@ -1,0 +1,152 @@
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+const AdminRegisterPage = () => {
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    businessName: '',
+    businessEmail: '',
+    businessPassword: '',
+    country: '',
+  });
+      
+
+  const [businessEmailExists, setBusinessEmailExists] = useState(false);
+  const navigate = useNavigate();
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setBusinessEmailExists(false);
+
+    if (formData.businessEmail === "test@example.com") {
+      setBusinessEmailExists(true);
+      return;
+    }
+
+    console.log("Registering business:", formData);
+
+    // Simulate storing email and redirecting
+    localStorage.setItem("userEmail", formData.businessEmail);
+    navigate('/admin/verify-email');
+  };
+
+  return (
+    <div style={{
+      textAlign: 'center', padding: '50px', maxWidth: '400px',
+      margin: 'auto', border: '2px solid #4b0082', borderRadius: '10px'
+    }}>
+      <h2>Create an Account</h2>
+
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          placeholder="First name"
+          name="firstName"
+          value={formData.firstName}
+          onChange={handleInputChange}
+          required
+          style={{ width: '100%', padding: '10px', margin: '5px 0' }}
+        />
+        <input
+          type="text"
+          placeholder="Last name"
+          name="lastName"
+          value={formData.lastName}
+          onChange={handleInputChange}
+          required
+          style={{ width: '100%', padding: '10px', margin: '5px 0' }}
+        />
+        <input
+          type="text"
+          placeholder="Business name"
+          name="businessName"
+          value={formData.businessName}
+          onChange={handleInputChange}
+          required
+          style={{ width: '100%', padding: '10px', margin: '5px 0' }}
+        />
+        <input
+          type="email"
+          placeholder="Business email"
+          name="businessEmail"
+          value={formData.businessEmail}
+          onChange={handleInputChange}
+          required
+          style={{ width: '100%', padding: '10px', margin: '5px 0' }}
+        />
+        {businessEmailExists && (
+          <p style={{
+            color: 'red',
+            fontSize: '13px',
+            textAlign: 'left',
+            margin: '2px 0 5px 2px'
+          }}>
+            This email address is already linked to an existing account.
+          </p>
+        )}
+        <input
+          type="password"
+          placeholder="Password"
+          name="businessPassword"
+          value={formData.businessPassword}
+          onChange={handleInputChange}
+          required
+          style={{ width: '100%', padding: '10px', margin: '5px 0' }}
+        />
+        <select
+          name="country"
+          value={formData.country}
+          onChange={handleInputChange}
+          required
+          style={{
+            width: '106%',
+            padding: '10px',
+            margin: '5px 0',
+            color: formData.country ? 'black' : 'gray'
+          }}
+        >
+          <option value="">Where is your business registered?</option>
+          <option value="USA">United States</option>
+          <option value="Other">Other</option>
+        </select>
+        <p style={{ fontSize: '12px', color: 'black', textAlign: 'left', marginLeft: '5px', marginTop: '-2px' }}>
+          If your business isn't registered, select your country of residence.
+        </p>
+        <p style={{ fontSize: '12px', margin: '10px 0' }}>
+          By selecting <b>Create account</b>, you agree to our
+          <span style={{ textDecoration: 'underline', cursor: 'pointer', color: '#4b0082', margin: '0 5px' }}
+            onClick={() => navigate('/admin/user-agreement')}>
+            User Agreement
+          </span>
+          and acknowledge reading our
+          <span style={{ textDecoration: 'underline', cursor: 'pointer', color: '#4b0082', margin: '0 5px' }}
+            onClick={() => navigate('/admin/privacy-notice')}>
+            User Privacy Notice
+          </span><span style={{ color: 'black' }}></span>
+        </p>
+        <button type="submit"
+          style={{ width: '95%', padding: '10px', background: '#FFD700', fontWeight: 'bold' }}>
+          Create account
+        </button>
+      </form>
+      <p style={{ marginTop: '15px' }}>
+        Already have an account? <span
+          style={{ textDecoration: 'underline', cursor: 'pointer', color: '#4b0082' }}
+          onClick={() => navigate('/admin/login')}>
+          Sign in
+        </span>
+      </p>
+    </div>
+  );
+};
+
+export default AdminRegisterPage;

@@ -57,7 +57,7 @@ const VerifyEmailPage = () => {
             setFailedAttempts(0);
             setTotalAttempts(0);
             console.log("Verification successful!");
-            navigate('/add-phone-number'); // Redirect to Seller Hub after successful verification
+            navigate('/admin/add-phone-number'); // Redirect to Seller Hub after successful verification
             return;
         }        
     

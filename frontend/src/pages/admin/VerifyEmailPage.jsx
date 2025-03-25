@@ -152,13 +152,13 @@ const VerifyEmailPage = () => {
                 value={code}
                 onChange={handleCodeChange}
                 maxLength="6"
-                style={{ width: '100%', padding: '10px', margin: '10px 0', textAlign: 'center', fontSize: '18px' }}
+                style={{ width: '94%', padding: '10px', margin: '10px 0', textAlign: 'center', fontSize: '18px' }}
             />
 
             <button 
                 onClick={handleVerify} 
                 style={{ 
-                    width: '106%', padding: '10px', 
+                    width: '100%', padding: '10px', 
                     background: verifyDisabled ? 'gray' : (code.length === 6 ? '#4b0082' : 'gray'), 
                     color: 'white', fontWeight: 'bold', 
                     cursor: verifyDisabled ? 'not-allowed' : (code.length === 6 ? 'pointer' : 'not-allowed') 

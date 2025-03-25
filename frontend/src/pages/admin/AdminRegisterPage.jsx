@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const AdminRegisterPage = () => {
@@ -10,18 +10,26 @@ const AdminRegisterPage = () => {
     businessPassword: '',
     country: '',
   });
-      
 
+  useEffect(() => {
+    const saved = localStorage.getItem('adminRegisterData');
+    if (saved) {
+      setFormData(JSON.parse(saved));
+    }
+  }, []);
+  
   const [businessEmailExists, setBusinessEmailExists] = useState(false);
   const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
+    const updatedForm = {
+      ...formData,
       [name]: value
-    }));
-  };
+    };
+    setFormData(updatedForm);
+    localStorage.setItem('adminRegisterData', JSON.stringify(updatedForm)); // ← autosave
+  };  
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -36,6 +44,7 @@ const AdminRegisterPage = () => {
 
     // Simulate storing email and redirecting
     localStorage.setItem("userEmail", formData.businessEmail);
+    localStorage.removeItem("adminRegisterData"); // ← clear saved draft
     navigate('/admin/verify-email');
   };
 
@@ -54,7 +63,7 @@ const AdminRegisterPage = () => {
           value={formData.firstName}
           onChange={handleInputChange}
           required
-          style={{ width: '100%', padding: '10px', margin: '5px 0' }}
+          style={{ width: '94%', padding: '10px', margin: '5px 0' }}
         />
         <input
           type="text"
@@ -63,7 +72,7 @@ const AdminRegisterPage = () => {
           value={formData.lastName}
           onChange={handleInputChange}
           required
-          style={{ width: '100%', padding: '10px', margin: '5px 0' }}
+          style={{ width: '94%', padding: '10px', margin: '5px 0' }}
         />
         <input
           type="text"
@@ -72,7 +81,7 @@ const AdminRegisterPage = () => {
           value={formData.businessName}
           onChange={handleInputChange}
           required
-          style={{ width: '100%', padding: '10px', margin: '5px 0' }}
+          style={{ width: '94%', padding: '10px', margin: '5px 0' }}
         />
         <input
           type="email"
@@ -81,7 +90,7 @@ const AdminRegisterPage = () => {
           value={formData.businessEmail}
           onChange={handleInputChange}
           required
-          style={{ width: '100%', padding: '10px', margin: '5px 0' }}
+          style={{ width: '94%', padding: '10px', margin: '5px 0' }}
         />
         {businessEmailExists && (
           <p style={{
@@ -100,7 +109,7 @@ const AdminRegisterPage = () => {
           value={formData.businessPassword}
           onChange={handleInputChange}
           required
-          style={{ width: '100%', padding: '10px', margin: '5px 0' }}
+          style={{ width: '94%', padding: '10px', margin: '5px 0' }}
         />
         <select
           name="country"
@@ -108,7 +117,7 @@ const AdminRegisterPage = () => {
           onChange={handleInputChange}
           required
           style={{
-            width: '106%',
+            width: '100%',
             padding: '10px',
             margin: '5px 0',
             color: formData.country ? 'black' : 'gray'
@@ -123,18 +132,27 @@ const AdminRegisterPage = () => {
         </p>
         <p style={{ fontSize: '12px', margin: '10px 0' }}>
           By selecting <b>Create account</b>, you agree to our
-          <span style={{ textDecoration: 'underline', cursor: 'pointer', color: '#4b0082', margin: '0 5px' }}
-            onClick={() => navigate('/admin/user-agreement')}>
+          <a 
+            href="/admin/user-agreement" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            style={{ textDecoration: 'underline', color: '#4b0082', margin: '0 5px' }}
+          >
             User Agreement
-          </span>
+          </a>
           and acknowledge reading our
-          <span style={{ textDecoration: 'underline', cursor: 'pointer', color: '#4b0082', margin: '0 5px' }}
-            onClick={() => navigate('/admin/privacy-notice')}>
+          <a 
+            href="/admin/privacy-notice" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            style={{ textDecoration: 'underline', color: '#4b0082', margin: '0 5px' }}
+          >
             User Privacy Notice
-          </span><span style={{ color: 'black' }}></span>
+          </a>  
+          <span style={{ color: 'black' }}></span>
         </p>
         <button type="submit"
-          style={{ width: '95%', padding: '10px', background: '#FFD700', fontWeight: 'bold' }}>
+          style={{ width: '100%', padding: '10px', background: '#FFD700', fontWeight: 'bold' }}>
           Create account
         </button>
       </form>

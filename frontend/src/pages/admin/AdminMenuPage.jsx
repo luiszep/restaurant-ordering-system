@@ -36,12 +36,15 @@ const AdminMenuPage = () => {
         image: null,
         customizableIngredients: [],
         hasCustomizableIngredients: false,
-        addableIngredients: [],        // new addition
-        hasAddableIngredients: false   // new toggle
+        addableIngredients: [],
+        hasAddableIngredients: false,
+        notes: [],             // <-- add this line
+        hasNotes: false        // <-- and this line
       };        
     });
     return defaults;
   });
+  
 
   const [editingTitles, setEditingTitles] = useState({});
   const [editingItem, setEditingItem] = useState(null);
@@ -126,7 +129,9 @@ const AdminMenuPage = () => {
       hasCustomizableIngredients: item.customizableIngredients && item.customizableIngredients.length > 0,
       customizableIngredients: item.customizableIngredients || [],
       hasAddableIngredients: item.addableIngredients && item.addableIngredients.length > 0,
-      addableIngredients: item.addableIngredients || []
+      addableIngredients: item.addableIngredients || [],
+      notes: item.notes || [],
+      hasNotes: item.notes && item.notes.length > 0
     });    
   };
 
@@ -203,6 +208,9 @@ const AdminMenuPage = () => {
         : [],
       addableIngredients: editingItem.hasAddableIngredients
         ? editingItem.addableIngredients.filter(ing => ing.trim() !== '')
+        : [],
+      notes: editingItem.hasNotes
+        ? editingItem.notes.filter(note => note.trim() !== '')
         : []
     };   
 
@@ -324,7 +332,10 @@ const AdminMenuPage = () => {
         : [],
       addableIngredients: editingItem.hasAddableIngredients
         ? editingItem.addableIngredients.filter(ing => ing.trim() !== '')
-        : []
+        : [],
+      notes: editingItem.hasNotes
+        ? editingItem.notes.filter(note => note.trim() !== '')
+        : []      
     };    
     setMenuSections((prev) => ({
       ...prev,
@@ -848,6 +859,76 @@ const AdminMenuPage = () => {
                                           </button>
                                         </div>
                                       )}
+
+                                      {/* Toggle Notes */}
+                                      <button
+                                        onClick={() => setEditingItem(prev => ({
+                                          ...prev,
+                                          hasNotes: !prev.hasNotes,
+                                          notes: prev.hasNotes ? [] : ['']
+                                        }))}
+                                        style={{
+                                          width: '100%',
+                                          marginTop: '8px',
+                                          padding: '6px',
+                                          backgroundColor: '#fff4e6',
+                                          color: '#ff8c00',
+                                          border: '1px solid #ff8c00',
+                                          borderRadius: '6px',
+                                          cursor: 'pointer',
+                                          fontSize: '13px'
+                                        }}
+                                      >
+                                        {editingItem.hasNotes ? "Remove Notes" : "Add Optional Notes (Tags)"}
+                                      </button>
+                                      {editingItem.hasNotes && (
+                                        <div style={{ marginTop: '8px', padding: '8px', border: '1px solid #ddd', borderRadius: '6px' }}>
+                                          <span style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '6px', display: 'block' }}>
+                                            Optional Notes (Tags):
+                                          </span>
+                                          {editingItem.notes.map((note, idx) => (
+                                            <input
+                                              key={idx}
+                                              type="text"
+                                              placeholder={`Note ${idx + 1}`}
+                                              value={note}
+                                              onChange={(e) => {
+                                                const updatedNotes = [...editingItem.notes];
+                                                updatedNotes[idx] = e.target.value;
+                                                setEditingItem(prev => ({
+                                                  ...prev,
+                                                  notes: updatedNotes
+                                                }));
+                                              }}
+                                              style={{
+                                                width: '100%',
+                                                marginBottom: '6px',
+                                                padding: '4px',
+                                                fontSize: '13px'
+                                              }}
+                                            />
+                                          ))}
+                                          {/* Button to Add Another Note */}
+                                          <button
+                                            onClick={() => setEditingItem(prev => ({
+                                              ...prev,
+                                              notes: [...prev.notes, '']
+                                            }))}
+                                            style={{
+                                              marginTop: '6px',
+                                              padding: '4px 8px',
+                                              fontSize: '12px',
+                                              backgroundColor: '#ff8c00',
+                                              color: '#fff',
+                                              border: 'none',
+                                              borderRadius: '4px',
+                                              cursor: 'pointer'
+                                            }}
+                                          >
+                                            + Add Another Note
+                                          </button>
+                                        </div>
+                                      )}
                                       {/* Save New Item Button */}
                                       <button
                                         onClick={handleSaveNewItem}
@@ -1232,6 +1313,76 @@ const AdminMenuPage = () => {
                                               </button>
                                             </div>
                                           )}
+
+                                          {/* Toggle Notes */}
+                                          <button
+                                            onClick={() => setEditingItem(prev => ({
+                                              ...prev,
+                                              hasNotes: !prev.hasNotes,
+                                              notes: prev.hasNotes ? [] : ['']
+                                            }))}
+                                            style={{
+                                              width: '100%',
+                                              marginTop: '8px',
+                                              padding: '6px',
+                                              backgroundColor: '#fff4e6',
+                                              color: '#ff8c00',
+                                              border: '1px solid #ff8c00',
+                                              borderRadius: '6px',
+                                              cursor: 'pointer',
+                                              fontSize: '13px'
+                                            }}
+                                          >
+                                            {editingItem.hasNotes ? "Remove Notes" : "Add Optional Notes (Tags)"}
+                                          </button>
+                                          {editingItem.hasNotes && (
+                                            <div style={{ marginTop: '8px', padding: '8px', border: '1px solid #ddd', borderRadius: '6px' }}>
+                                              <span style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '6px', display: 'block' }}>
+                                                Optional Notes (Tags):
+                                              </span>
+                                              {editingItem.notes.map((note, idx) => (
+                                                <input
+                                                  key={idx}
+                                                  type="text"
+                                                  placeholder={`Note ${idx + 1}`}
+                                                  value={note}
+                                                  onChange={(e) => {
+                                                    const updatedNotes = [...editingItem.notes];
+                                                    updatedNotes[idx] = e.target.value;
+                                                    setEditingItem(prev => ({
+                                                      ...prev,
+                                                      notes: updatedNotes
+                                                    }));
+                                                  }}
+                                                  style={{
+                                                    width: '100%',
+                                                    marginBottom: '6px',
+                                                    padding: '4px',
+                                                    fontSize: '13px'
+                                                  }}
+                                                />
+                                              ))}
+                                              {/* Button to Add Another Note */}
+                                              <button
+                                                onClick={() => setEditingItem(prev => ({
+                                                  ...prev,
+                                                  notes: [...prev.notes, '']
+                                                }))}
+                                                style={{
+                                                  marginTop: '6px',
+                                                  padding: '4px 8px',
+                                                  fontSize: '12px',
+                                                  backgroundColor: '#ff8c00',
+                                                  color: '#fff',
+                                                  border: 'none',
+                                                  borderRadius: '4px',
+                                                  cursor: 'pointer'
+                                                }}
+                                              >
+                                                + Add Another Note
+                                              </button>
+                                            </div>
+                                          )}
                                           {/* Hidden File Input for Item Image */}
                                           <input
                                             ref={imageInputRef}
@@ -1359,6 +1510,24 @@ const AdminMenuPage = () => {
                                                   <li key={idx}>{ing}</li>
                                                 ))}
                                               </ul>
+                                            </div>
+                                          )}
+                                          {item.notes && item.notes.length > 0 && (
+                                            <div style={{ marginTop: '8px', fontSize: '13px' }}>
+                                              <strong>Optional Notes:</strong>
+                                              <div style={{ marginTop: '4px', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                                                {item.notes.map((note, idx) => (
+                                                  <span key={idx} style={{
+                                                    backgroundColor: '#f2f2f2',
+                                                    padding: '4px 8px',
+                                                    borderRadius: '12px',
+                                                    fontSize: '12px',
+                                                    color: '#333'
+                                                  }}>
+                                                    {note}
+                                                  </span>
+                                                ))}
+                                              </div>
                                             </div>
                                           )}
                                           {/* Edit and Delete Buttons */}

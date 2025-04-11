@@ -38,8 +38,9 @@ const AdminMenuPage = () => {
         hasCustomizableIngredients: false,
         addableIngredients: [],
         hasAddableIngredients: false,
-        notes: [],             // <-- add this line
-        hasNotes: false        // <-- and this line
+        notes: [],      
+        hasNotes: false,
+        specialRequestOption: 'allow', // default value for dropdown
       };        
     });
     return defaults;
@@ -131,7 +132,8 @@ const AdminMenuPage = () => {
       hasAddableIngredients: item.addableIngredients && item.addableIngredients.length > 0,
       addableIngredients: item.addableIngredients || [],
       notes: item.notes || [],
-      hasNotes: item.notes && item.notes.length > 0
+      hasNotes: item.notes && item.notes.length > 0,
+      specialRequestOption: item.specialRequestOption || 'allow', // default to 'allow'
     });    
   };
 
@@ -211,7 +213,8 @@ const AdminMenuPage = () => {
         : [],
       notes: editingItem.hasNotes
         ? editingItem.notes.filter(note => note.trim() !== '')
-        : []
+        : [],
+      specialRequestOption: editingItem.specialRequestOption || 'allow'
     };   
 
     setMenuSections(updated);
@@ -335,7 +338,8 @@ const AdminMenuPage = () => {
         : [],
       notes: editingItem.hasNotes
         ? editingItem.notes.filter(note => note.trim() !== '')
-        : []      
+        : [],
+      specialRequestOption: editingItem.specialRequestOption || 'allow'      
     };    
     setMenuSections((prev) => ({
       ...prev,
@@ -929,6 +933,32 @@ const AdminMenuPage = () => {
                                           </button>
                                         </div>
                                       )}
+
+                                      {/* Special Request Dropdown */}
+                                      <div style={{ marginTop: '10px' }}>
+                                        <label htmlFor="specialRequestOption" style={{ fontSize: '13px', fontWeight: 'bold' }}>
+                                          Special Requests/Comments:
+                                        </label>
+                                        <select
+                                          name="specialRequestOption"
+                                          value={editingItem.specialRequestOption}
+                                          onChange={(e) =>
+                                            setEditingItem(prev => ({ ...prev, specialRequestOption: e.target.value }))
+                                          }
+                                          style={{
+                                            width: '100%',
+                                            padding: '6px',
+                                            fontSize: '13px',
+                                            borderRadius: '6px',
+                                            border: '1px solid #ccc',
+                                            marginTop: '6px'
+                                          }}
+                                        >
+                                          <option value="allow">Allow Special Requests/Comments</option>
+                                          <option value="call">Call Server for Special Requests</option>
+                                          <option value="none">Do Not Accept Special Requests</option>
+                                        </select>
+                                      </div>
                                       {/* Save New Item Button */}
                                       <button
                                         onClick={handleSaveNewItem}
@@ -1383,6 +1413,31 @@ const AdminMenuPage = () => {
                                               </button>
                                             </div>
                                           )}
+                                          {/* Special Request Dropdown */}
+                                          <div style={{ marginTop: '10px' }}>
+                                            <label htmlFor="specialRequestOption" style={{ fontSize: '13px', fontWeight: 'bold' }}>
+                                              Special Requests/Comments:
+                                            </label>
+                                            <select
+                                              name="specialRequestOption"
+                                              value={editingItem.specialRequestOption}
+                                              onChange={(e) =>
+                                                setEditingItem(prev => ({ ...prev, specialRequestOption: e.target.value }))
+                                              }
+                                              style={{
+                                                width: '100%',
+                                                padding: '6px',
+                                                fontSize: '13px',
+                                                borderRadius: '6px',
+                                                border: '1px solid #ccc',
+                                                marginTop: '6px'
+                                              }}
+                                            >
+                                              <option value="allow">Allow Special Requests/Comments</option>
+                                              <option value="call">Call Server for Special Requests</option>
+                                              <option value="none">Do Not Accept Special Requests</option>
+                                            </select>
+                                          </div>
                                           {/* Hidden File Input for Item Image */}
                                           <input
                                             ref={imageInputRef}
@@ -1530,6 +1585,17 @@ const AdminMenuPage = () => {
                                               </div>
                                             </div>
                                           )}
+                                          {item.specialRequestOption && (
+                                            <div style={{ marginTop: '6px', fontSize: '13px' }}>
+                                              <strong>Special Request Option:</strong>{' '}
+                                              {item.specialRequestOption === 'allow'
+                                                ? 'Allow Special Requests/Comments'
+                                                : item.specialRequestOption === 'call'
+                                                ? 'Call Server for Special Requests'
+                                                : 'Do Not Accept Special Requests'}
+                                            </div>
+                                          )}
+
                                           {/* Edit and Delete Buttons */}
                                           <div
                                             style={{

@@ -9,7 +9,13 @@ const AdminDashboardLayout = () => {
       <Sidebar />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         <Topbar />
-        <main style={{ padding: '20px', background: '#f4f4f4', flex: 1 }}>
+        <main style={{
+          padding: '30px 40px', // top/bottom = 30px, left/right = 40px
+          background: '#f4f4f4',
+          flex: 1,
+          maxWidth: '100%',
+          boxSizing: 'border-box'
+        }}>
           <Outlet />
         </main>
       </div>

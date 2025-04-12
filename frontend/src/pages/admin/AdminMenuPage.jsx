@@ -134,6 +134,8 @@ const AdminMenuPage = () => {
       notes: item.notes || [],
       hasNotes: item.notes && item.notes.length > 0,
       specialRequestOption: item.specialRequestOption || 'allow', // default to 'allow'
+      newCustomIngredient: '',
+      newAddableIngredient: '' // ✅ ADD THIS    
     });    
   };
 
@@ -578,17 +580,25 @@ const AdminMenuPage = () => {
                                 {/* Add New Item Card */}
                                 <div
                                   style={{
-                                    width: '200px',
+                                    width: '100%',
+                                    maxWidth: '850px',
+                                    padding: '20px',
+                                    margin: '0 auto',
                                     border: '1px solid #ccc',
                                     borderRadius: '10px',
-                                    padding: '10px',
-                                    backgroundColor: '#fff',
-                                    cursor: 'pointer'
+                                    backgroundColor: '#fff'
                                   }}
                                 >
-                                  {editingItem?.type === 'new' &&
-                                  editingItem.section === sectionKey ? (
-                                    <>
+                                  {editingItem?.type === 'new' && editingItem.section === sectionKey ? (
+                                    <div
+                                    style={{
+                                      width: '100%',
+                                      maxWidth: '850px',
+                                      margin: '0 auto'
+                                    }}
+                                    >
+                                    <div className="new-item-grid">
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                                     {/* New Item Name Input */}
                                     <input
                                       name="name"
@@ -625,6 +635,7 @@ const AdminMenuPage = () => {
                                         style={{
                                           width: '100%',
                                           height: '130px',
+                                          minHeight: '130px',
                                           border: '1px dashed #ccc',
                                           borderRadius: '6px',
                                           display: 'flex',
@@ -710,6 +721,9 @@ const AdminMenuPage = () => {
                                         }
                                       }}
                                     />
+                                    </div>
+
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                                     {/* Optional Description Input */}
                                     <input
                                         name="description"
@@ -719,8 +733,10 @@ const AdminMenuPage = () => {
                                         placeholder="Add optional description"
                                         style={{
                                           width: '100%',
-                                          fontSize: '13px',
-                                          marginBottom: '8px'
+                                          padding: '6px',
+                                          fontSize: '14px',
+                                          marginTop: '2px',
+                                          boxSizing: 'border-box'
                                         }}
                                       />
 
@@ -748,29 +764,71 @@ const AdminMenuPage = () => {
                                       {/* Customizable Ingredients Fields */}
                                       {editingItem.hasCustomizableIngredients && (
                                         <div style={{ marginTop: '8px', padding: '8px', border: '1px solid #ddd', borderRadius: '6px' }}>
-                                          <span style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '6px', display: 'block' }}>Customizable Ingredients:</span>
+                                          <span style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '6px', display: 'block' }}>Customizable Ingredients:</span>    
+
+
+                                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                                           {editingItem.customizableIngredients.map((ingredient, idx) => (
-                                            <input
+                                            <div
                                               key={idx}
-                                              type="text"
-                                              placeholder={`Ingredient ${idx + 1}`}
-                                              value={ingredient}
-                                              onChange={(e) => {
-                                                const updatedIngredients = [...editingItem.customizableIngredients];
-                                                updatedIngredients[idx] = e.target.value;
-                                                setEditingItem(prev => ({
-                                                  ...prev,
-                                                  customizableIngredients: updatedIngredients
-                                                }));
-                                              }}
                                               style={{
-                                                width: '100%',
-                                                marginBottom: '6px',
-                                                padding: '4px',
-                                                fontSize: '13px'
+                                                backgroundColor: '#f0f0f0',
+                                                padding: '6px 10px',
+                                                borderRadius: '16px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                fontSize: '13px',
+                                                color: '#333'
                                               }}
-                                            />
+                                            >
+                                              {ingredient}
+                                              <span
+                                                onClick={() => {
+                                                  const updated = [...editingItem.customizableIngredients];
+                                                  updated.splice(idx, 1);
+                                                  setEditingItem(prev => ({
+                                                    ...prev,
+                                                    customizableIngredients: updated
+                                                  }));
+                                                }}
+                                                style={{
+                                                  marginLeft: '8px',
+                                                  cursor: 'pointer',
+                                                  color: '#999',
+                                                  fontWeight: 'bold'
+                                                }}
+                                              >
+                                                ×
+                                              </span>                               
+                                            </div>
                                           ))}
+                                        </div>
+                                        <input
+                                          type="text"
+                                          placeholder="Type and press Enter"
+                                          value={editingItem.newCustomIngredient || ''}
+                                          onChange={(e) =>
+                                            setEditingItem(prev => ({ ...prev, newCustomIngredient: e.target.value }))
+                                          }
+                                          onKeyDown={(e) => {
+                                            if (e.key === 'Enter' && editingItem.newCustomIngredient?.trim()) {
+                                              setEditingItem(prev => ({
+                                                ...prev,
+                                                customizableIngredients: [...prev.customizableIngredients, prev.newCustomIngredient.trim()],
+                                                newCustomIngredient: ''
+                                              }));
+                                            }
+                                          }}
+                                          style={{
+                                            marginTop: '8px',
+                                            padding: '6px',
+                                            fontSize: '13px',
+                                            width: '100%',
+                                            border: '1px solid #ccc',
+                                            borderRadius: '6px'
+                                          }}
+                                        />
+
                                           {/* Button to Add Ingredient */}
                                           <button
                                             onClick={() => setEditingItem(prev => ({
@@ -813,35 +871,74 @@ const AdminMenuPage = () => {
                                       >
                                         {editingItem.hasAddableIngredients ? "Remove Addable Ingredients" : "Add Addable Ingredients (Sauces, etc.)"}
                                       </button>
+                                      
                                       {/* Addable Ingredients Input Fields */}
                                       {editingItem.hasAddableIngredients && (
                                         <div style={{ marginTop: '8px', padding: '8px', border: '1px solid #ddd', borderRadius: '6px' }}>
                                           <span style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '6px', display: 'block' }}>
                                             Addable Ingredients (Sauces, etc.):
                                           </span>
-                                          {editingItem.addableIngredients.map((ingredient, idx) => (
-                                            <input
-                                              key={idx}
-                                              type="text"
-                                              placeholder={`Addable Ingredient ${idx + 1}`}
-                                              value={ingredient}
-                                              onChange={(e) => {
-                                                const updatedIngredients = [...editingItem.addableIngredients];
-                                                updatedIngredients[idx] = e.target.value;
+                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                                            {editingItem.addableIngredients.map((ingredient, idx) => (
+                                              <div
+                                                key={idx}
+                                                style={{
+                                                  backgroundColor: '#f0f0f0',
+                                                  padding: '6px 10px',
+                                                  borderRadius: '16px',
+                                                  display: 'flex',
+                                                  alignItems: 'center',
+                                                  fontSize: '13px',
+                                                  color: '#333'
+                                                }}
+                                              >
+                                                {ingredient}
+                                                <span
+                                                  onClick={() => {
+                                                    const updated = [...editingItem.addableIngredients];
+                                                    updated.splice(idx, 1);
+                                                    setEditingItem(prev => ({
+                                                      ...prev,
+                                                      addableIngredients: updated
+                                                    }));
+                                                  }}
+                                                  style={{
+                                                    marginLeft: '8px',
+                                                    cursor: 'pointer',
+                                                    color: '#999',
+                                                    fontWeight: 'bold'
+                                                  }}
+                                                >
+                                                  ×
+                                                </span>
+                                              </div>
+                                            ))}
+                                          </div>
+                                          <input
+                                            type="text"
+                                            placeholder="Type and press Enter"
+                                            value={editingItem.newAddableIngredient || ''}
+                                            onChange={(e) =>
+                                              setEditingItem(prev => ({ ...prev, newAddableIngredient: e.target.value }))
+                                            }
+                                            onKeyDown={(e) => {
+                                              if (e.key === 'Enter' && editingItem.newAddableIngredient?.trim()) {
                                                 setEditingItem(prev => ({
                                                   ...prev,
-                                                  addableIngredients: updatedIngredients
+                                                  addableIngredients: [...prev.addableIngredients, prev.newAddableIngredient.trim()],
+                                                  newAddableIngredient: ''
                                                 }));
-                                              }}
-                                              style={{
-                                                width: '100%',
-                                                marginBottom: '6px',
-                                                padding: '4px',
-                                                fontSize: '13px'
-                                              }}
-                                            />
-                                          ))}
-
+                                              }
+                                            }}
+                                            style={{
+                                              marginTop: '8px',
+                                              padding: '6px',
+                                              fontSize: '13px',
+                                              width: '100%',
+                                              border: '1px solid #ccc',
+                                              borderRadius: '6px'
+                                            }}
+                                          />     
                                           {/* Button to Add Another Ingredient */}
                                           <button
                                             onClick={() => setEditingItem(prev => ({
@@ -995,10 +1092,13 @@ const AdminMenuPage = () => {
                                       >
                                         Save Item
                                       </button>
-                                    </>
+                                    </div>
+                                    </div>
+                                    </div>
                                   ) : (
                                     // Placeholder card for adding a new item
-                                    <div
+                                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                                      <div
                                       onClick={() =>
                                         setEditingItem({
                                           section: sectionKey,
@@ -1006,59 +1106,114 @@ const AdminMenuPage = () => {
                                           name: '',
                                           price: '',
                                           description: '',
-                                          image: null
+                                          image: null,
+                                          previewUrl: null,
+                                          customizableIngredients: [],
+                                          hasCustomizableIngredients: false,
+                                          addableIngredients: [],
+                                          hasAddableIngredients: false,
+                                          notes: [],
+                                          hasNotes: false,
+                                          specialRequestOption: 'allow',
+                                          newCustomIngredient: '',
+                                          newAddableIngredient: ''
                                         })
                                       }
                                       style={{
-                                        fontWeight: 'bold',
-                                        fontSize: '16px',
-                                        color: '#999',
+                                        display: 'grid',
+                                        gridTemplateColumns: '1fr 2fr',
+                                        gap: '24px',
                                         width: '100%',
-                                        cursor: 'pointer'
+                                        cursor: 'pointer',
+                                        padding: '10px',
+                                        borderRadius: '10px',
+                                        background: '#fdfdfd',
                                       }}
                                     >
-                                      {/* Placeholder for name and price */}
-                                      <div
-                                        style={{
-                                          display: 'flex',
-                                          justifyContent: 'space-between'
-                                        }}
-                                      >
-                                        <span>Add item name</span>
-                                        <span>$0.00</span>
+                                      {/* LEFT SIDE: IMAGE + TAGS (FUTURE) */}
+                                      <div>
+                                        <div
+                                          style={{
+                                            width: '100%',
+                                            height: '160px',
+                                            border: '1px dashed #ccc',
+                                            borderRadius: '6px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            color: '#aaa',
+                                            fontSize: '14px',
+                                            marginBottom: '12px'
+                                          }}
+                                        >
+                                          Add Optional Image +
+                                        </div>
+                                        <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#000', marginBottom: '6px' }}>
+                                          OPTIONAL TAGS
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                          <span style={{ backgroundColor: '#f0f0f0', borderRadius: '12px', padding: '6px 10px', fontSize: '12px' }}>
+                                            TAG1
+                                          </span>
+                                          <span style={{ backgroundColor: '#f0f0f0', borderRadius: '12px', padding: '6px 10px', fontSize: '12px' }}>
+                                            TAG2
+                                          </span>
+                                        </div>
                                       </div>
 
-                                      {/* Placeholder for image */}
-                                      <div
-                                        style={{
-                                          width: '100%',
-                                          height: '130px',
-                                          border: '1px dashed #ccc',
-                                          borderRadius: '6px',
-                                          display: 'flex',
-                                          alignItems: 'center',
-                                          justifyContent: 'center',
-                                          color: '#aaa',
-                                          fontSize: '14px',
-                                          margin: '8px 0',
-                                          background: '#fdfdfd'
-                                        }}
-                                      >
-                                        Add Optional Image +
-                                      </div>
+                                      {/* RIGHT SIDE: TEXTUAL DETAILS */}
+                                      <div>
+                                        <div
+                                          style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            fontWeight: 'bold',
+                                            fontSize: '20px',
+                                            marginBottom: '4px'
+                                          }}
+                                        >
+                                          <span>Add Item Name</span>
+                                          <span>$0.00</span>
+                                        </div>
+                                        <div style={{ fontSize: '13px', color: '#999', marginBottom: '12px' }}>
+                                          Add optional description
+                                        </div>
 
-                                      {/* Placeholder for description */}
-                                      <div
-                                        style={{
-                                          fontSize: '13px',
-                                          color: '#999'
-                                        }}
-                                      >
-                                        Add optional description
+                                        <div style={{ fontWeight: 'bold', fontSize: '14px', marginBottom: '4px' }}>
+                                          Add Optional Customizable Ingredients:
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                                          <span style={{ backgroundColor: '#f0f0f0', padding: '6px 10px', borderRadius: '12px' }}>
+                                            INGREDIENT1
+                                          </span>
+                                          <span style={{ backgroundColor: '#f0f0f0', padding: '6px 10px', borderRadius: '12px' }}>
+                                            INGREDIENT2
+                                          </span>
+                                        </div>
+
+                                        <div style={{ fontWeight: 'bold', fontSize: '14px', marginBottom: '4px' }}>
+                                          Add Optional Addable Ingredients:
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                                          <span style={{ backgroundColor: '#f0f0f0', padding: '6px 10px', borderRadius: '12px' }}>
+                                            INGREDIENT1
+                                          </span>
+                                          <span style={{ backgroundColor: '#f0f0f0', padding: '6px 10px', borderRadius: '12px' }}>
+                                            INGREDIENT2
+                                          </span>
+                                        </div>
+
+                                        <div style={{ fontWeight: 'bold', fontSize: '14px', marginBottom: '4px' }}>
+                                          SPECIAL REQUESTS
+                                        </div>
+                                        <div style={{ fontSize: '13px', color: '#666' }}>
+                                          Allow Special Requests/Comments
+                                        </div>
                                       </div>
                                     </div>
+                                  </div>
                                   )}
-                                </div>
+                                  </div>
                                 {/* Existing Items in Section */}
                                 {items.items.map((item, index) => {
                                   const isEditing =

@@ -1,8 +1,12 @@
+// File: src/pages/SuccessPage.jsx
+// Description: Displays a congratulatory message after a user completes account setup.
+// This page provides a CTA to navigate to the admin login dashboard.
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const SuccessPage = () => {
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // Used to programmatically redirect user to login page
 
   return (
     <div style={{
@@ -18,7 +22,7 @@ const SuccessPage = () => {
       <p>You can now log in and access your admin dashboard.</p>
 
       <button
-        onClick={() => navigate('/admin/login')}
+        onClick={() => navigate('/admin/login')} // Navigates user to the login page
         style={{
           marginTop: '20px',
           padding: '10px 20px',

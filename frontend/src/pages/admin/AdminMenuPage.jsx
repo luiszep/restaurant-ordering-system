@@ -1,16 +1,18 @@
+// File: src/pages/AdminMenuPage.jsx
+// Description: Admin interface for managing restaurant menu sections and items.
+
 // --- Imports ---
 import React, { useState, useEffect, useRef } from 'react';
-import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-
-// --- Helper Functions ---
-const fileToBase64 = (file) => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result); // Base64 string
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-};
+import MenuSectionList from './AdminMenuComponents/MenuSectionList';
+import {
+  fileToBase64,
+  getDefaultNewItem,
+  saveNewItemName,
+  saveNewItemPrice,
+  saveNewItemDescription
+} from './AdminMenuComponents/helpers/menuHelpers';
+import DeleteSectionModal from './AdminMenuComponents/modals/DeleteSectionModal';
+import ImageZoomModal from './AdminMenuComponents/modals/ImageZoomModal';
 
 // --- Initial States ---
 const initialSections = {
@@ -23,44 +25,23 @@ const initialSections = {
 // --- AdminMenuPage Component ---
 const AdminMenuPage = () => {
   // --- State Declarations ---
-  const [menuSections, setMenuSections] = useState(initialSections);
-  const [sectionOrder, setSectionOrder] = useState(Object.keys(initialSections));
-  
-  const [newItems, setNewItems] = useState(() => {
-    const defaults = {};
-    Object.keys(initialSections).forEach((section) => {
-      defaults[section] = {
-        name: '',
-        price: '',
-        description: '',
-        image: null,
-        customizableIngredients: [],
-        hasCustomizableIngredients: false,
-        addableIngredients: [],
-        hasAddableIngredients: false,
-        notes: [],      
-        hasNotes: false,
-        specialRequestOption: 'allow', // default value for dropdown
-      };        
-    });
-    return defaults;
-  });
-  
+  const [menuSections, setMenuSections] = useState(initialSections);         // Menu data
+  const [sectionOrder, setSectionOrder] = useState(Object.keys(initialSections)); // Order of sections
 
-  const [editingTitles, setEditingTitles] = useState({});
-  const [editingItem, setEditingItem] = useState(null);
+  const [editingTitles, setEditingTitles] = useState({});                     // Tracks which section titles are in edit mode
+  const [editingItem, setEditingItem] = useState(null);                       // The currently edited item
 
-  const [sectionCounter, setSectionCounter] = useState(2); // Starts at 2 (section1 already exists)
+  const [sectionCounter, setSectionCounter] = useState(2);                   // Counter for creating new section keys
 
-  const [showTip, setShowTip] = useState(
+  const [showTip, setShowTip] = useState(                                   // Tooltip visibility for section renaming tip
     !localStorage.getItem('adminMenuRenameTipShown')
   );
 
-  const [sectionToDelete, setSectionToDelete] = useState(null);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [zoomImage, setZoomImage] = useState(null);
+  const [sectionToDelete, setSectionToDelete] = useState(null);             // Key of section to delete
+  const [showDeleteModal, setShowDeleteModal] = useState(false);            // Show/hide confirmation modal
+  const [zoomImage, setZoomImage] = useState(null);                          // Image source for zoom preview
 
-  const imageInputRef = useRef(null);
+  const imageInputRef = useRef(null);                                        // Ref for image file input
 
   // --- Effects ---
   useEffect(() => {
@@ -73,53 +54,14 @@ const AdminMenuPage = () => {
     }
   }, [showTip]);
 
-  // --- Handler Functions ---
-  const handleInputChange = (e, section) => {
-    const { name, value, files } = e.target;
-    setNewItems((prev) => ({
-      ...prev,
-      [section]: {
-        ...prev[section],
-        [name]: name === 'image' ? files[0] : value
-      }
-    }));
-  };
-
-  // Adds a new item to the specified section
-  const handleAddItem = (section) => {
-    const item = newItems[section];
-    
-    if (!item.name || !item.price || isNaN(item.price) || Number(item.price) <= 0) return;
-
-    const newItem = {
-      name: item.name,
-      price: parseFloat(item.price).toFixed(2),
-      description: item.description,
-      image: item.image ? URL.createObjectURL(item.image) : null
-    };
-
-    setMenuSections((prev) => ({
-      ...prev,
-      [section]: {
-        ...prev[section],
-        items: [...prev[section].items, newItem]
-      }
-    }));
-
-    setNewItems((prev) => ({
-      ...prev,
-      [section]: { name: '', price: '', description: '', image: null }
-    }));
-  };
-
-  // Deletes an item from a section based on index
+  // --- Item Deletion ---
   const handleDeleteItem = (section, index) => {
     const updated = { ...menuSections };
     updated[section].items.splice(index, 1);
     setMenuSections(updated);
   };
 
-  // Initializes editing state for an existing item
+  // --- Start Editing Existing Item ---
   const handleEditItem = (section, index) => {
     const item = menuSections[section].items[index];
     setEditingItem({
@@ -139,7 +81,7 @@ const AdminMenuPage = () => {
     });    
   };
 
-  // Handles input changes during item editing (name, price, image, etc.)
+  // --- Handle Input Change While Editing Item ---
   const handleEditChange = (e) => {
     const { name, value, files } = e.target;
 
@@ -166,7 +108,7 @@ const AdminMenuPage = () => {
 
   // --- Image Handlers ---
 
-  // Handles dropping an image file into the editing area
+  // Handle Drag-and-Drop Image Upload
   const handleImageDrop = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -188,12 +130,12 @@ const AdminMenuPage = () => {
     }));
   };
 
-  // Allows drag-over functionality for image drop
+  // Allow File Drop Behavior
   const allowDrop = (e) => {
     e.preventDefault();
   };
 
-  // Saves edited menu item, converting image file to Base64 if needed
+  // --- Save Edited Item ---
   const handleSaveEdit = async () => {
     const updated = { ...menuSections };
     let finalImage = editingItem.previewUrl || null;
@@ -223,7 +165,7 @@ const AdminMenuPage = () => {
     setEditingItem(null);
   };
 
-  // --- Section Title Handlers ---
+  // --- Section Title Editing ---
 
   // Updates the title of a section while editing
   const handleTitleChange = (e, sectionKey) => {
@@ -265,15 +207,6 @@ const AdminMenuPage = () => {
         items: []
       }
     }));
-    setNewItems((prev) => ({
-      ...prev,
-      [newKey]: {
-        name: '',
-        price: '',
-        description: '',
-        image: null
-      }
-    }));
     setSectionOrder((prev) => [...prev, newKey]);
     setSectionCounter((prev) => prev + 1);
   };
@@ -281,13 +214,10 @@ const AdminMenuPage = () => {
   // Deletes an entire section and cleans related state
   const handleDeleteSection = (sectionKey) => {
     const updatedSections = { ...menuSections };
-    const updatedNewItems = { ...newItems };
 
     delete updatedSections[sectionKey];
-    delete updatedNewItems[sectionKey];
 
     setMenuSections(updatedSections);
-    setNewItems(updatedNewItems);
 
     setSectionOrder((prev) => prev.filter((key) => key !== sectionKey));
 
@@ -355,1614 +285,91 @@ const AdminMenuPage = () => {
     setEditingItem(null);
   };
 
-  // --- Field-specific Save Helpers ---
+  // --- UI Rendering ---
+  return (
+    <>
+      {/* Tip for renaming sections */}
+      {showTip && (
+        <div
+          style={{
+            backgroundColor: '#fffbe6',
+            padding: '10px 15px',
+            border: '1px solid #ffe58f',
+            borderRadius: '8px',
+            margin: '20px 30px',
+            color: '#8c6d1f',
+            fontSize: '14px',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+          }}
+        >
+          <span>💡 Tip: Click section titles to rename them!</span>
+        </div>
+      )}
 
-  // Trims and saves new item's name
-  const saveNewItemName = () => {
-    if (!editingItem?.name?.trim()) return;
-    setEditingItem((prev) => ({
-      ...prev,
-      name: editingItem.name.trim()
-    }));
-  };
+      {/* Main Menu Management Container */}
+      <div style={{ padding: '30px' }}>
+        <h2>Menu Management</h2>
+        <MenuSectionList
+          sectionOrder={sectionOrder}
+          menuSections={menuSections}
+          editingTitles={editingTitles}
+          editingItem={editingItem}
+          imageInputRef={imageInputRef}
+          handleTitleChange={handleTitleChange}
+          handleTitleBlur={handleTitleBlur}
+          toggleEditingTitle={toggleEditingTitle}
+          setEditingItem={setEditingItem}
+          handleEditItem={handleEditItem}
+          handleDeleteItem={handleDeleteItem}
+          getDefaultNewItem={getDefaultNewItem}
+          handleSaveNewItem={handleSaveNewItem}
+          handleEditChange={handleEditChange}
+          handleImageDrop={handleImageDrop}
+          allowDrop={allowDrop}
+          saveNewItemName={saveNewItemName}
+          saveNewItemPrice={saveNewItemPrice}
+          saveNewItemDescription={saveNewItemDescription}
+          setZoomImage={setZoomImage}
+          setShowDeleteModal={setShowDeleteModal}
+          setSectionToDelete={setSectionToDelete}
+          handleSaveEdit={handleSaveEdit}
+          handleDragEnd={handleDragEnd}
+        />
 
-  // Formats and saves new item's price
-  const saveNewItemPrice = () => {
-    if (!editingItem?.price || isNaN(editingItem.price)) return;
-    const price = parseFloat(editingItem.price);
-    setEditingItem((prev) => ({
-      ...prev,
-      price: price.toFixed(2)
-    }));
-  };
+        {/* Add New Section Button */}
+        <div
+          onClick={handleAddSection}
+          style={{
+            marginTop: '40px',
+            padding: '20px',
+            textAlign: 'center',
+            cursor: 'pointer',
+            color: '#007bff',
+            fontWeight: 'bold',
+            fontSize: '16px',
+            borderTop: '1px dashed #ccc'
+          }}
+        >
+          + Add New Section
+        </div>
+      </div>
 
-  // Trims and saves new item's description
-  const saveNewItemDescription = () => {
-    setEditingItem((prev) => ({
-      ...prev,
-      description: editingItem.description?.trim() || ''
-    }));
-  };
+      {/* Confirmation Modal for Section Deletion */}
+      <DeleteSectionModal
+        showDeleteModal={showDeleteModal}
+        sectionToDelete={sectionToDelete}
+        handleDeleteSection={handleDeleteSection}
+        setShowDeleteModal={setShowDeleteModal}
+        setSectionToDelete={setSectionToDelete}
+      />
 
-    // --- UI Rendering ---
-    return (
-      <>
-        {/* Tip for renaming sections */}
-        {showTip && (
-          <div
-            style={{
-              backgroundColor: '#fffbe6',
-              padding: '10px 15px',
-              border: '1px solid #ffe58f',
-              borderRadius: '8px',
-              margin: '20px 30px',
-              color: '#8c6d1f',
-              fontSize: '14px',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-            }}
-          >
-            <span>💡 Tip: Click section titles to rename them!</span>
-          </div>
-        )}
-  
-        {/* Main Menu Management Container */}
-        <div style={{ padding: '30px' }}>
-          <h2>Menu Management</h2>
-  
-          {/* Sections with Drag-and-Drop */}
-          <div style={{ position: 'relative', overflow: 'hidden', marginTop: '30px' }}>
-            <DragDropContext onDragEnd={handleDragEnd}>
-              <Droppable droppableId="sections">
-                {(provided) => (
-                  <div
-                    ref={provided.innerRef}
-                    {...provided.droppableProps}
-                    style={{
-                      position: 'relative',
-                      overflow: 'hidden',
-                      paddingBottom: '60px',
-                    }}
-                  >
-                    {sectionOrder.map((sectionKey, index) => {
-                      const items = menuSections[sectionKey];
-                      return (
-                        <Draggable
-                          key={sectionKey}
-                          draggableId={sectionKey}
-                          index={index}
-                        >
-                          {(provided, snapshot) => (
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              style={{
-                                ...provided.draggableProps.style,
-                                transform: provided.draggableProps.style?.transform,
-                                marginBottom: '20px',
-                                transition: 'transform 200ms ease, box-shadow 200ms ease',
-                                boxShadow: snapshot.isDragging
-                                  ? '0 4px 12px rgba(0,0,0,0.15)'
-                                  : 'none',
-                                borderRadius: '12px',
-                                background: snapshot.isDragging ? '#e6f7ff' : 'transparent',
-                                zIndex: snapshot.isDragging ? 100 : 'auto'
-                              }}
-                            >
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  flexDirection: 'column',
-                                  marginBottom: '20px',
-                                  backgroundColor: snapshot.isDragging
-                                    ? '#e6f7ff'
-                                    : '#f9f9f9',
-                                  padding: '20px',
-                                  borderRadius: '12px',
-                                  border: '1.5px solid #ccc',
-                                  boxShadow: '0 2px 6px rgba(0,0,0,0.05)',
-                                  position: 'relative'
-                                }}
-                              >
-                                {/* Section Title with Drag Handle */}
-                                <div
-                                  style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    marginBottom: '20px',
-                                    cursor: snapshot.isDragging ? 'grabbing' : 'grab',
-                                  }}
-                                  {...provided.dragHandleProps}
-                                >
-                                  {/* Drag handle icon */}
-                                  <span
-                                    style={{
-                                      marginRight: '10px',
-                                      fontSize: '18px',
-                                      userSelect: 'none',
-                                    }}
-                                    title="Drag to reorder"
-                                  >
-                                    ≡
-                                  </span>
-  
-                                  {/* Editable section title */}
-                                  {editingTitles[sectionKey] ? (
-                                    <input
-                                      type="text"
-                                      value={menuSections[sectionKey].title}
-                                      onChange={(e) =>
-                                        handleTitleChange(e, sectionKey)
-                                      }
-                                      onBlur={() => handleTitleBlur(sectionKey)}
-                                      onKeyDown={(e) => {
-                                        if (e.key === 'Enter') {
-                                          e.preventDefault(); // prevents accidental submission
-                                          handleTitleBlur(sectionKey);
-                                        }
-                                      }}
-                                      autoFocus
-                                      style={{
-                                        fontSize: '20px',
-                                        fontWeight: 'bold',
-                                        marginRight: '10px',
-                                        padding: '4px'
-                                      }}
-                                    />
-                                  ) : (
-                                    <div
-                                    style={{
-                                      position: 'relative',
-                                      display: 'inline-block',
-                                      cursor: 'pointer'
-                                    }}
-                                    onClick={() => toggleEditingTitle(sectionKey)}
-                                    title="Click to rename section"
-                                    onMouseEnter={(e) => {
-                                      e.currentTarget.querySelector('h2').style.color = '#666';
-                                      e.currentTarget.querySelector('.edit-icon').style.opacity = 1;
-                                    }}
-                                    onMouseLeave={(e) => {
-                                      e.currentTarget.querySelector('h2').style.color = '#000';
-                                      e.currentTarget.querySelector('.edit-icon').style.opacity = 0;
-                                    }}
-                                  >
-                                    <h2
-                                      style={{
-                                        margin: 0,
-                                        fontSize: '20px',
-                                        fontWeight: 'bold',
-                                        transition: 'color 0.2s'
-                                      }}
-                                    >
-                                      {menuSections[sectionKey].title}
-                                    </h2>
-                                    <span
-                                      className="edit-icon"
-                                      style={{
-                                        position: 'absolute',
-                                        right: -25,
-                                        top: '50%',
-                                        transform: 'translateY(-50%)',
-                                        fontSize: '16px',
-                                        color: '#666',
-                                        opacity: 0,
-                                        transition: 'opacity 0.2s',
-                                        pointerEvents: 'none'
-                                      }}
-                                    >
-                                      ✏️
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-
-                              {/* Section Number Badge */}
-                              <div
-                                style={{
-                                  position: 'absolute',
-                                  bottom: '10px',
-                                  left: '15px',
-                                  fontSize: '18px',
-                                  color: '#999'
-                                }}
-                              >
-                                {index + 1}
-                              </div>
-
-                              {/* Items Container (Card Layout) */}
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  flexWrap: 'wrap',
-                                  gap: '15px'
-                                }}
-                              >
-                                {/* Add New Item Card */}
-                                <div
-                                  style={{
-                                    width: '100%',
-                                    maxWidth: '850px',
-                                    padding: '20px',
-                                    margin: '0 auto',
-                                    border: '1px solid #ccc',
-                                    borderRadius: '10px',
-                                    backgroundColor: '#fff'
-                                  }}
-                                >
-                                  {editingItem?.type === 'new' && editingItem.section === sectionKey ? (
-                                    <div
-                                    style={{
-                                      width: '100%',
-                                      maxWidth: '850px',
-                                      margin: '0 auto'
-                                    }}
-                                    >
-                                    <div className="new-item-grid">
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                    {/* New Item Name Input */}
-                                    <input
-                                      name="name"
-                                      value={editingItem.name}
-                                      onChange={handleEditChange}
-                                      onBlur={saveNewItemName}
-                                      placeholder="Add item name"
-                                      style={{
-                                        fontWeight: 'bold',
-                                        fontSize: '16px',
-                                        width: '100%',
-                                        marginBottom: '8px'
-                                      }}
-                                    />
-
-                                    {/* New Item Price Input */}
-                                    <input
-                                      name="price"
-                                      value={editingItem.price}
-                                      onChange={handleEditChange}
-                                      onBlur={saveNewItemPrice}
-                                      placeholder="$0.00"
-                                      style={{
-                                        fontSize: '14px',
-                                        width: '100%',
-                                        marginBottom: '8px'
-                                      }}
-                                    />
-
-                                    {/* Image Upload and Preview Area */}
-                                    <div style={{ position: 'relative', marginBottom: '8px' }}>
-                                      <div
-                                        onClick={() => imageInputRef.current?.click()}
-                                        style={{
-                                          width: '100%',
-                                          height: '130px',
-                                          minHeight: '130px',
-                                          border: '1px dashed #ccc',
-                                          borderRadius: '6px',
-                                          display: 'flex',
-                                          alignItems: 'center',
-                                          justifyContent: 'center',
-                                          color: '#aaa',
-                                          fontSize: '14px',
-                                          background: '#fdfdfd',
-                                          overflow: 'hidden',
-                                          cursor: 'pointer'
-                                        }}
-                                      >
-                                        {editingItem?.previewUrl ? (
-                                          <img
-                                            src={editingItem.previewUrl}
-                                            alt="Preview"
-                                            style={{
-                                              width: '100%',
-                                              height: '100%',
-                                              objectFit: 'cover'
-                                            }}
-                                          />
-                                        ) : (
-                                          "Add Optional Image +"
-                                        )}
-                                      </div>
-
-                                      {/* Remove Image Button */}
-                                      {editingItem?.previewUrl && (
-                                        <button
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            if (editingItem.previewUrl) {
-                                              URL.revokeObjectURL(editingItem.previewUrl);
-                                            }
-                                            setEditingItem((prev) => ({
-                                              ...prev,
-                                              image: null,
-                                              previewUrl: null
-                                            }));
-                                            if (imageInputRef.current) {
-                                              imageInputRef.current.value = '';
-                                            }
-                                          }}
-                                          style={{
-                                            position: 'absolute',
-                                            top: '4px',
-                                            right: '4px',
-                                            backgroundColor: '#fff',
-                                            border: '1px solid #ccc',
-                                            borderRadius: '50%',
-                                            width: '24px',
-                                            height: '24px',
-                                            textAlign: 'center',
-                                            lineHeight: '22px',
-                                            fontSize: '16px',
-                                            cursor: 'pointer',
-                                            boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
-                                          }}
-                                          title="Remove Image"
-                                        >
-                                          ×
-                                        </button>
-                                      )}
-                                    </div>
-
-                                    {/* Hidden File Input for Images */}
-                                    <input
-                                      ref={imageInputRef}
-                                      type="file"
-                                      name="image"
-                                      accept="image/*"
-                                      style={{ display: 'none' }}
-                                      onChange={(e) => {
-                                        const file = e.target.files[0];
-                                        if (file) {
-                                          const previewUrl = URL.createObjectURL(file);
-                                          setEditingItem((prev) => ({
-                                            ...prev,
-                                            image: file,
-                                            previewUrl
-                                          }));
-                                        }
-                                      }}
-                                    />
-                                    </div>
-
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                    {/* Optional Description Input */}
-                                    <input
-                                        name="description"
-                                        value={editingItem.description}
-                                        onChange={handleEditChange}
-                                        onBlur={saveNewItemDescription}
-                                        placeholder="Add optional description"
-                                        style={{
-                                          width: '100%',
-                                          padding: '6px',
-                                          fontSize: '14px',
-                                          marginTop: '2px',
-                                          boxSizing: 'border-box'
-                                        }}
-                                      />
-
-                                      {/* Toggle Customizable Ingredients */}
-                                      <button
-                                        onClick={() => setEditingItem(prev => ({
-                                          ...prev,
-                                          hasCustomizableIngredients: !prev.hasCustomizableIngredients,
-                                          customizableIngredients: prev.hasCustomizableIngredients ? [] : ['']
-                                        }))}
-                                        style={{
-                                          width: '100%',
-                                          marginTop: '8px',
-                                          padding: '6px',
-                                          backgroundColor: '#e7f3ff',
-                                          color: '#007bff',
-                                          border: '1px solid #007bff',
-                                          borderRadius: '6px',
-                                          cursor: 'pointer',
-                                          fontSize: '13px'
-                                        }}
-                                      >
-                                        {editingItem.hasCustomizableIngredients ? "Remove Customizable Ingredients" : "Add Customizable Ingredients"}
-                                      </button>
-                                      {/* Customizable Ingredients Fields */}
-                                      {editingItem.hasCustomizableIngredients && (
-                                        <div style={{ marginTop: '8px', padding: '8px', border: '1px solid #ddd', borderRadius: '6px' }}>
-                                          <span style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '6px', display: 'block' }}>Customizable Ingredients:</span>    
-
-
-                                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                                          {editingItem.customizableIngredients.map((ingredient, idx) => (
-                                            <div
-                                              key={idx}
-                                              style={{
-                                                backgroundColor: '#f0f0f0',
-                                                padding: '6px 10px',
-                                                borderRadius: '16px',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                fontSize: '13px',
-                                                color: '#333'
-                                              }}
-                                            >
-                                              {ingredient}
-                                              <span
-                                                onClick={() => {
-                                                  const updated = [...editingItem.customizableIngredients];
-                                                  updated.splice(idx, 1);
-                                                  setEditingItem(prev => ({
-                                                    ...prev,
-                                                    customizableIngredients: updated
-                                                  }));
-                                                }}
-                                                style={{
-                                                  marginLeft: '8px',
-                                                  cursor: 'pointer',
-                                                  color: '#999',
-                                                  fontWeight: 'bold'
-                                                }}
-                                              >
-                                                ×
-                                              </span>                               
-                                            </div>
-                                          ))}
-                                        </div>
-                                        <input
-                                          type="text"
-                                          placeholder="Type and press Enter"
-                                          value={editingItem.newCustomIngredient || ''}
-                                          onChange={(e) =>
-                                            setEditingItem(prev => ({ ...prev, newCustomIngredient: e.target.value }))
-                                          }
-                                          onKeyDown={(e) => {
-                                            if (e.key === 'Enter' && editingItem.newCustomIngredient?.trim()) {
-                                              setEditingItem(prev => ({
-                                                ...prev,
-                                                customizableIngredients: [...prev.customizableIngredients, prev.newCustomIngredient.trim()],
-                                                newCustomIngredient: ''
-                                              }));
-                                            }
-                                          }}
-                                          style={{
-                                            marginTop: '8px',
-                                            padding: '6px',
-                                            fontSize: '13px',
-                                            width: '100%',
-                                            border: '1px solid #ccc',
-                                            borderRadius: '6px'
-                                          }}
-                                        />
-
-                                          {/* Button to Add Ingredient */}
-                                          <button
-                                            onClick={() => setEditingItem(prev => ({
-                                              ...prev,
-                                              customizableIngredients: [...prev.customizableIngredients, '']
-                                            }))}
-                                            style={{
-                                              marginTop: '6px',
-                                              padding: '4px 8px',
-                                              fontSize: '12px',
-                                              backgroundColor: '#007bff',
-                                              color: '#fff',
-                                              border: 'none',
-                                              borderRadius: '4px',
-                                              cursor: 'pointer'
-                                            }}
-                                          >
-                                            + Add Another Ingredient
-                                          </button>
-                                        </div>
-                                      )}
-                                      {/* Toggle Addable Ingredients */}
-                                      <button
-                                        onClick={() => setEditingItem(prev => ({
-                                          ...prev,
-                                          hasAddableIngredients: !prev.hasAddableIngredients,
-                                          addableIngredients: prev.hasAddableIngredients ? [] : ['']
-                                        }))}
-                                        style={{
-                                          width: '100%',
-                                          marginTop: '8px',
-                                          padding: '6px',
-                                          backgroundColor: '#e7ffe7',
-                                          color: '#28a745',
-                                          border: '1px solid #28a745',
-                                          borderRadius: '6px',
-                                          cursor: 'pointer',
-                                          fontSize: '13px'
-                                        }}
-                                      >
-                                        {editingItem.hasAddableIngredients ? "Remove Addable Ingredients" : "Add Addable Ingredients (Sauces, etc.)"}
-                                      </button>
-                                      
-                                      {/* Addable Ingredients Input Fields */}
-                                      {editingItem.hasAddableIngredients && (
-                                        <div style={{ marginTop: '8px', padding: '8px', border: '1px solid #ddd', borderRadius: '6px' }}>
-                                          <span style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '6px', display: 'block' }}>
-                                            Addable Ingredients (Sauces, etc.):
-                                          </span>
-                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                                            {editingItem.addableIngredients.map((ingredient, idx) => (
-                                              <div
-                                                key={idx}
-                                                style={{
-                                                  backgroundColor: '#f0f0f0',
-                                                  padding: '6px 10px',
-                                                  borderRadius: '16px',
-                                                  display: 'flex',
-                                                  alignItems: 'center',
-                                                  fontSize: '13px',
-                                                  color: '#333'
-                                                }}
-                                              >
-                                                {ingredient}
-                                                <span
-                                                  onClick={() => {
-                                                    const updated = [...editingItem.addableIngredients];
-                                                    updated.splice(idx, 1);
-                                                    setEditingItem(prev => ({
-                                                      ...prev,
-                                                      addableIngredients: updated
-                                                    }));
-                                                  }}
-                                                  style={{
-                                                    marginLeft: '8px',
-                                                    cursor: 'pointer',
-                                                    color: '#999',
-                                                    fontWeight: 'bold'
-                                                  }}
-                                                >
-                                                  ×
-                                                </span>
-                                              </div>
-                                            ))}
-                                          </div>
-                                          <input
-                                            type="text"
-                                            placeholder="Type and press Enter"
-                                            value={editingItem.newAddableIngredient || ''}
-                                            onChange={(e) =>
-                                              setEditingItem(prev => ({ ...prev, newAddableIngredient: e.target.value }))
-                                            }
-                                            onKeyDown={(e) => {
-                                              if (e.key === 'Enter' && editingItem.newAddableIngredient?.trim()) {
-                                                setEditingItem(prev => ({
-                                                  ...prev,
-                                                  addableIngredients: [...prev.addableIngredients, prev.newAddableIngredient.trim()],
-                                                  newAddableIngredient: ''
-                                                }));
-                                              }
-                                            }}
-                                            style={{
-                                              marginTop: '8px',
-                                              padding: '6px',
-                                              fontSize: '13px',
-                                              width: '100%',
-                                              border: '1px solid #ccc',
-                                              borderRadius: '6px'
-                                            }}
-                                          />     
-                                          {/* Button to Add Another Ingredient */}
-                                          <button
-                                            onClick={() => setEditingItem(prev => ({
-                                              ...prev,
-                                              addableIngredients: [...prev.addableIngredients, '']
-                                            }))}
-                                            style={{
-                                              marginTop: '6px',
-                                              padding: '4px 8px',
-                                              fontSize: '12px',
-                                              backgroundColor: '#28a745',
-                                              color: '#fff',
-                                              border: 'none',
-                                              borderRadius: '4px',
-                                              cursor: 'pointer'
-                                            }}
-                                          >
-                                            + Add Another Addable Ingredient
-                                          </button>
-                                        </div>
-                                      )}
-
-                                      {/* Toggle Notes */}
-                                      <button
-                                        onClick={() => setEditingItem(prev => ({
-                                          ...prev,
-                                          hasNotes: !prev.hasNotes,
-                                          notes: prev.hasNotes ? [] : ['']
-                                        }))}
-                                        style={{
-                                          width: '100%',
-                                          marginTop: '8px',
-                                          padding: '6px',
-                                          backgroundColor: '#fff4e6',
-                                          color: '#ff8c00',
-                                          border: '1px solid #ff8c00',
-                                          borderRadius: '6px',
-                                          cursor: 'pointer',
-                                          fontSize: '13px'
-                                        }}
-                                      >
-                                        {editingItem.hasNotes ? "Remove Notes" : "Add Optional Notes (Tags)"}
-                                      </button>
-                                      {editingItem.hasNotes && (
-                                        <div style={{ marginTop: '8px', padding: '8px', border: '1px solid #ddd', borderRadius: '6px' }}>
-                                          <span style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '6px', display: 'block' }}>
-                                            Optional Notes (Tags):
-                                          </span>
-                                          {editingItem.notes.map((note, idx) => (
-                                            <input
-                                              key={idx}
-                                              type="text"
-                                              placeholder={`Note ${idx + 1}`}
-                                              value={note}
-                                              onChange={(e) => {
-                                                const updatedNotes = [...editingItem.notes];
-                                                updatedNotes[idx] = e.target.value;
-                                                setEditingItem(prev => ({
-                                                  ...prev,
-                                                  notes: updatedNotes
-                                                }));
-                                              }}
-                                              style={{
-                                                width: '100%',
-                                                marginBottom: '6px',
-                                                padding: '4px',
-                                                fontSize: '13px'
-                                              }}
-                                            />
-                                          ))}
-                                          {/* Button to Add Another Note */}
-                                          <button
-                                            onClick={() => setEditingItem(prev => ({
-                                              ...prev,
-                                              notes: [...prev.notes, '']
-                                            }))}
-                                            style={{
-                                              marginTop: '6px',
-                                              padding: '4px 8px',
-                                              fontSize: '12px',
-                                              backgroundColor: '#ff8c00',
-                                              color: '#fff',
-                                              border: 'none',
-                                              borderRadius: '4px',
-                                              cursor: 'pointer'
-                                            }}
-                                          >
-                                            + Add Another Note
-                                          </button>
-                                        </div>
-                                      )}
-
-                                      {/* Special Request Dropdown */}
-                                      <div style={{ marginTop: '10px' }}>
-                                        <label htmlFor="specialRequestOption" style={{ fontSize: '13px', fontWeight: 'bold' }}>
-                                          Special Requests/Comments:
-                                        </label>
-                                        <select
-                                          name="specialRequestOption"
-                                          value={editingItem.specialRequestOption}
-                                          onChange={(e) =>
-                                            setEditingItem(prev => ({ ...prev, specialRequestOption: e.target.value }))
-                                          }
-                                          style={{
-                                            width: '100%',
-                                            padding: '6px',
-                                            fontSize: '13px',
-                                            borderRadius: '6px',
-                                            border: '1px solid #ccc',
-                                            marginTop: '6px'
-                                          }}
-                                        >
-                                          <option value="allow">Allow Special Requests/Comments</option>
-                                          <option value="call">Call Server for Special Requests</option>
-                                          <option value="none">Do Not Accept Special Requests</option>
-                                        </select>
-                                      </div>
-                                      {/* Save New Item Button */}
-                                      <button
-                                        onClick={handleSaveNewItem}
-                                        disabled={
-                                          !editingItem.name ||
-                                          !editingItem.price ||
-                                          isNaN(editingItem.price) ||
-                                          Number(editingItem.price) <= 0
-                                        }
-                                        style={{
-                                          marginTop: '8px',
-                                          width: '100%',
-                                          padding: '6px',
-                                          backgroundColor: '#007bff',
-                                          color: '#fff',
-                                          border: 'none',
-                                          borderRadius: '6px',
-                                          cursor:
-                                            editingItem.name &&
-                                            editingItem.price &&
-                                            !isNaN(editingItem.price) &&
-                                            Number(editingItem.price) > 0
-                                              ? 'pointer'
-                                              : 'not-allowed',
-                                          fontSize: '14px',
-                                          opacity:
-                                            editingItem.name &&
-                                            editingItem.price &&
-                                            !isNaN(editingItem.price) &&
-                                            Number(editingItem.price) > 0
-                                              ? 1
-                                              : 0.5
-                                        }}
-                                      >
-                                        Save Item
-                                      </button>
-                                    </div>
-                                    </div>
-                                    </div>
-                                  ) : (
-                                    // Placeholder card for adding a new item
-                                    <div style={{ display: 'flex', justifyContent: 'center' }}>
-                                      <div
-                                      onClick={() =>
-                                        setEditingItem({
-                                          section: sectionKey,
-                                          type: 'new',
-                                          name: '',
-                                          price: '',
-                                          description: '',
-                                          image: null,
-                                          previewUrl: null,
-                                          customizableIngredients: [],
-                                          hasCustomizableIngredients: false,
-                                          addableIngredients: [],
-                                          hasAddableIngredients: false,
-                                          notes: [],
-                                          hasNotes: false,
-                                          specialRequestOption: 'allow',
-                                          newCustomIngredient: '',
-                                          newAddableIngredient: ''
-                                        })
-                                      }
-                                      style={{
-                                        display: 'grid',
-                                        gridTemplateColumns: '1fr 2fr',
-                                        gap: '24px',
-                                        width: '100%',
-                                        cursor: 'pointer',
-                                        padding: '10px',
-                                        borderRadius: '10px',
-                                        background: '#fdfdfd',
-                                      }}
-                                    >
-                                      {/* LEFT SIDE: IMAGE + TAGS (FUTURE) */}
-                                      <div>
-                                        <div
-                                          style={{
-                                            width: '100%',
-                                            height: '160px',
-                                            border: '1px dashed #ccc',
-                                            borderRadius: '6px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            color: '#aaa',
-                                            fontSize: '14px',
-                                            marginBottom: '12px'
-                                          }}
-                                        >
-                                          Add Optional Image +
-                                        </div>
-                                        <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#000', marginBottom: '6px' }}>
-                                          OPTIONAL TAGS
-                                        </div>
-                                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                                          <span style={{ backgroundColor: '#f0f0f0', borderRadius: '12px', padding: '6px 10px', fontSize: '12px' }}>
-                                            TAG1
-                                          </span>
-                                          <span style={{ backgroundColor: '#f0f0f0', borderRadius: '12px', padding: '6px 10px', fontSize: '12px' }}>
-                                            TAG2
-                                          </span>
-                                        </div>
-                                      </div>
-
-                                      {/* RIGHT SIDE: TEXTUAL DETAILS */}
-                                      <div>
-                                        <div
-                                          style={{
-                                            display: 'flex',
-                                            justifyContent: 'space-between',
-                                            fontWeight: 'bold',
-                                            fontSize: '20px',
-                                            marginBottom: '4px'
-                                          }}
-                                        >
-                                          <span>Add Item Name</span>
-                                          <span>$0.00</span>
-                                        </div>
-                                        <div style={{ fontSize: '13px', color: '#999', marginBottom: '12px' }}>
-                                          Add optional description
-                                        </div>
-
-                                        <div style={{ fontWeight: 'bold', fontSize: '14px', marginBottom: '4px' }}>
-                                          Add Optional Customizable Ingredients:
-                                        </div>
-                                        <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-                                          <span style={{ backgroundColor: '#f0f0f0', padding: '6px 10px', borderRadius: '12px' }}>
-                                            INGREDIENT1
-                                          </span>
-                                          <span style={{ backgroundColor: '#f0f0f0', padding: '6px 10px', borderRadius: '12px' }}>
-                                            INGREDIENT2
-                                          </span>
-                                        </div>
-
-                                        <div style={{ fontWeight: 'bold', fontSize: '14px', marginBottom: '4px' }}>
-                                          Add Optional Addable Ingredients:
-                                        </div>
-                                        <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-                                          <span style={{ backgroundColor: '#f0f0f0', padding: '6px 10px', borderRadius: '12px' }}>
-                                            INGREDIENT1
-                                          </span>
-                                          <span style={{ backgroundColor: '#f0f0f0', padding: '6px 10px', borderRadius: '12px' }}>
-                                            INGREDIENT2
-                                          </span>
-                                        </div>
-
-                                        <div style={{ fontWeight: 'bold', fontSize: '14px', marginBottom: '4px' }}>
-                                          SPECIAL REQUESTS
-                                        </div>
-                                        <div style={{ fontSize: '13px', color: '#666' }}>
-                                          Allow Special Requests/Comments
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                  )}
-                                  </div>
-                                {/* Existing Items in Section */}
-                                {items.items.map((item, index) => {
-                                  const isEditing =
-                                    editingItem &&
-                                    editingItem.section === sectionKey &&
-                                    editingItem.index === index;
-
-                                  return (
-                                    <div
-                                      key={index}
-                                      style={{
-                                        width: '200px',
-                                        border: '1px solid #ccc',
-                                        borderRadius: '10px',
-                                        padding: '10px',
-                                        backgroundColor: '#fff'
-                                      }}
-                                    >
-                                      {isEditing ? (
-                                        <>
-                                          {/* Editable Item Name */}
-                                          <input
-                                            name="name"
-                                            value={editingItem.name}
-                                            onChange={handleEditChange}
-                                            onBlur={saveNewItemName}
-                                            placeholder="Add item name"
-                                            style={{
-                                              fontWeight: 'bold',
-                                              fontSize: '16px',
-                                              width: '100%',
-                                              marginBottom: '8px'
-                                            }}
-                                          />
-
-                                          {/* Editable Item Price */}
-                                          <input
-                                            name="price"
-                                            value={editingItem.price}
-                                            onChange={handleEditChange}
-                                            onBlur={saveNewItemPrice}
-                                            placeholder="$0.00"
-                                            style={{
-                                              fontSize: '14px',
-                                              width: '100%',
-                                              marginBottom: '8px'
-                                            }}
-                                          />
-
-                                          {/* Editable Item Image */}
-                                          <div style={{ position: 'relative', marginBottom: '8px' }}>
-                                            <div
-                                              onClick={() => imageInputRef.current?.click()}
-                                              onDrop={handleImageDrop}
-                                              onDragOver={allowDrop}
-                                              style={{
-                                                width: '100%',
-                                                height: '130px',
-                                                border: '1px dashed #ccc',
-                                                borderRadius: '6px',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                color: '#aaa',
-                                                fontSize: '14px',
-                                                background: '#fdfdfd',
-                                                overflow: 'hidden',
-                                                cursor: 'pointer',
-                                                position: 'relative'
-                                              }}
-                                            >
-                                              {editingItem?.previewUrl ? (
-                                                <img
-                                                  src={editingItem.previewUrl}
-                                                  alt="Preview"
-                                                  style={{
-                                                    width: '100%',
-                                                    height: '100%',
-                                                    objectFit: 'cover'
-                                                  }}
-                                                  onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setZoomImage(editingItem.previewUrl);
-                                                  }}
-                                                />
-                                              ) : (
-                                                "Add Optional Image +"
-                                              )}
-                                            </div>
-
-                                            {/* Remove Image Button */}
-                                            {editingItem?.previewUrl && (
-                                              <button
-                                                onClick={(e) => {
-                                                  e.stopPropagation();
-                                                  if (editingItem.previewUrl) {
-                                                    URL.revokeObjectURL(editingItem.previewUrl);
-                                                  }
-                                                  setEditingItem((prev) => ({
-                                                    ...prev,
-                                                    image: null,
-                                                    previewUrl: null
-                                                  }));
-                                                  if (imageInputRef.current) {
-                                                    imageInputRef.current.value = '';
-                                                  }
-                                                }}
-                                                style={{
-                                                  position: 'absolute',
-                                                  top: '4px',
-                                                  right: '4px',
-                                                  backgroundColor: '#fff',
-                                                  border: '1px solid #ccc',
-                                                  borderRadius: '50%',
-                                                  width: '24px',
-                                                  height: '24px',
-                                                  textAlign: 'center',
-                                                  lineHeight: '22px',
-                                                  fontSize: '16px',
-                                                  cursor: 'pointer',
-                                                  boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
-                                                }}
-                                                title="Remove Image"
-                                              >
-                                                ×
-                                              </button>
-                                            )}
-                                          </div>
-                                          {/* Editable Item Description */}
-                                          <input
-                                            name="description"
-                                            value={editingItem.description}
-                                            onChange={handleEditChange}
-                                            onBlur={saveNewItemDescription}
-                                            placeholder="Add optional description"
-                                            style={{
-                                              width: '100%',
-                                              fontSize: '13px',
-                                              marginBottom: '8px'
-                                            }}
-                                          />
-                                          {/* Toggle Customizable Ingredients for Existing Items */}
-                                          <button
-                                            onClick={() => setEditingItem(prev => ({
-                                              ...prev,
-                                              hasCustomizableIngredients: !prev.hasCustomizableIngredients,
-                                              customizableIngredients: prev.hasCustomizableIngredients ? [] : ['']
-                                            }))}
-                                            style={{
-                                              width: '100%',
-                                              marginTop: '8px',
-                                              padding: '6px',
-                                              backgroundColor: '#e7f3ff',
-                                              color: '#007bff',
-                                              border: '1px solid #007bff',
-                                              borderRadius: '6px',
-                                              cursor: 'pointer',
-                                              fontSize: '13px'
-                                            }}
-                                          >
-                                            {editingItem.hasCustomizableIngredients ? "Remove Customizable Ingredients" : "Add Customizable Ingredients"}
-                                          </button>
-
-                                          {/* Customizable Ingredients Input Fields */}
-                                          {editingItem.hasCustomizableIngredients && (
-                                            <div style={{ marginTop: '8px', padding: '8px', border: '1px solid #ddd', borderRadius: '6px' }}>
-                                              <span style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '6px', display: 'block' }}>
-                                                Customizable Ingredients:
-                                              </span>
-                                              {editingItem.customizableIngredients.map((ingredient, idx) => (
-                                                <input
-                                                  key={idx}
-                                                  type="text"
-                                                  placeholder={`Ingredient ${idx + 1}`}
-                                                  value={ingredient}
-                                                  onChange={(e) => {
-                                                    const updatedIngredients = [...editingItem.customizableIngredients];
-                                                    updatedIngredients[idx] = e.target.value;
-                                                    setEditingItem(prev => ({
-                                                      ...prev,
-                                                      customizableIngredients: updatedIngredients
-                                                    }));
-                                                  }}
-                                                  style={{
-                                                    width: '100%',
-                                                    marginBottom: '6px',
-                                                    padding: '4px',
-                                                    fontSize: '13px'
-                                                  }}
-                                                />
-                                              ))}                               
-                                              {/* Button to Add Another Ingredient */}
-                                              <button
-                                                onClick={() => setEditingItem(prev => ({
-                                                  ...prev,
-                                                  customizableIngredients: [...prev.customizableIngredients, '']
-                                                }))}
-                                                style={{
-                                                  marginTop: '6px',
-                                                  padding: '4px 8px',
-                                                  fontSize: '12px',
-                                                  backgroundColor: '#007bff',
-                                                  color: '#fff',
-                                                  border: 'none',
-                                                  borderRadius: '4px',
-                                                  cursor: 'pointer'
-                                                }}
-                                              >
-                                                + Add Another Ingredient
-                                              </button>
-                                            </div>
-                                          )}
-                                          {/* Toggle Addable Ingredients for Existing Items */}
-                                          <button
-                                            onClick={() => setEditingItem(prev => ({
-                                              ...prev,
-                                              hasAddableIngredients: !prev.hasAddableIngredients,
-                                              addableIngredients: prev.hasAddableIngredients ? [] : ['']
-                                            }))}
-                                            style={{
-                                              width: '100%',
-                                              marginTop: '8px',
-                                              padding: '6px',
-                                              backgroundColor: '#e7ffe7',
-                                              color: '#28a745',
-                                              border: '1px solid #28a745',
-                                              borderRadius: '6px',
-                                              cursor: 'pointer',
-                                              fontSize: '13px'
-                                            }}
-                                          >
-                                            {editingItem.hasAddableIngredients ? "Remove Addable Ingredients" : "Add Addable Ingredients (Sauces, etc.)"}
-                                          </button>
-
-                                          {/* Addable Ingredients Input Fields */}
-                                          {editingItem.hasAddableIngredients && (
-                                            <div style={{ marginTop: '8px', padding: '8px', border: '1px solid #ddd', borderRadius: '6px' }}>
-                                              <span style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '6px', display: 'block' }}>
-                                                Addable Ingredients (Sauces, etc.):
-                                              </span>
-                                              {editingItem.addableIngredients.map((ingredient, idx) => (
-                                                <input
-                                                  key={idx}
-                                                  type="text"
-                                                  placeholder={`Addable Ingredient ${idx + 1}`}
-                                                  value={ingredient}
-                                                  onChange={(e) => {
-                                                    const updatedIngredients = [...editingItem.addableIngredients];
-                                                    updatedIngredients[idx] = e.target.value;
-                                                    setEditingItem(prev => ({
-                                                      ...prev,
-                                                      addableIngredients: updatedIngredients
-                                                    }));
-                                                  }}
-                                                  style={{
-                                                    width: '100%',
-                                                    marginBottom: '6px',
-                                                    padding: '4px',
-                                                    fontSize: '13px'
-                                                  }}
-                                                />
-                                              ))}
-
-                                              {/* Button to Add Another Addable Ingredient */}
-                                              <button
-                                                onClick={() => setEditingItem(prev => ({
-                                                  ...prev,
-                                                  addableIngredients: [...prev.addableIngredients, '']
-                                                }))}
-                                                style={{
-                                                  marginTop: '6px',
-                                                  padding: '4px 8px',
-                                                  fontSize: '12px',
-                                                  backgroundColor: '#28a745',
-                                                  color: '#fff',
-                                                  border: 'none',
-                                                  borderRadius: '4px',
-                                                  cursor: 'pointer'
-                                                }}
-                                              >
-                                                + Add Another Addable Ingredient
-                                              </button>
-                                            </div>
-                                          )}
-
-                                          {/* Toggle Notes */}
-                                          <button
-                                            onClick={() => setEditingItem(prev => ({
-                                              ...prev,
-                                              hasNotes: !prev.hasNotes,
-                                              notes: prev.hasNotes ? [] : ['']
-                                            }))}
-                                            style={{
-                                              width: '100%',
-                                              marginTop: '8px',
-                                              padding: '6px',
-                                              backgroundColor: '#fff4e6',
-                                              color: '#ff8c00',
-                                              border: '1px solid #ff8c00',
-                                              borderRadius: '6px',
-                                              cursor: 'pointer',
-                                              fontSize: '13px'
-                                            }}
-                                          >
-                                            {editingItem.hasNotes ? "Remove Notes" : "Add Optional Notes (Tags)"}
-                                          </button>
-                                          {editingItem.hasNotes && (
-                                            <div style={{ marginTop: '8px', padding: '8px', border: '1px solid #ddd', borderRadius: '6px' }}>
-                                              <span style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '6px', display: 'block' }}>
-                                                Optional Notes (Tags):
-                                              </span>
-                                              {editingItem.notes.map((note, idx) => (
-                                                <input
-                                                  key={idx}
-                                                  type="text"
-                                                  placeholder={`Note ${idx + 1}`}
-                                                  value={note}
-                                                  onChange={(e) => {
-                                                    const updatedNotes = [...editingItem.notes];
-                                                    updatedNotes[idx] = e.target.value;
-                                                    setEditingItem(prev => ({
-                                                      ...prev,
-                                                      notes: updatedNotes
-                                                    }));
-                                                  }}
-                                                  style={{
-                                                    width: '100%',
-                                                    marginBottom: '6px',
-                                                    padding: '4px',
-                                                    fontSize: '13px'
-                                                  }}
-                                                />
-                                              ))}
-                                              {/* Button to Add Another Note */}
-                                              <button
-                                                onClick={() => setEditingItem(prev => ({
-                                                  ...prev,
-                                                  notes: [...prev.notes, '']
-                                                }))}
-                                                style={{
-                                                  marginTop: '6px',
-                                                  padding: '4px 8px',
-                                                  fontSize: '12px',
-                                                  backgroundColor: '#ff8c00',
-                                                  color: '#fff',
-                                                  border: 'none',
-                                                  borderRadius: '4px',
-                                                  cursor: 'pointer'
-                                                }}
-                                              >
-                                                + Add Another Note
-                                              </button>
-                                            </div>
-                                          )}
-                                          {/* Special Request Dropdown */}
-                                          <div style={{ marginTop: '10px' }}>
-                                            <label htmlFor="specialRequestOption" style={{ fontSize: '13px', fontWeight: 'bold' }}>
-                                              Special Requests/Comments:
-                                            </label>
-                                            <select
-                                              name="specialRequestOption"
-                                              value={editingItem.specialRequestOption}
-                                              onChange={(e) =>
-                                                setEditingItem(prev => ({ ...prev, specialRequestOption: e.target.value }))
-                                              }
-                                              style={{
-                                                width: '100%',
-                                                padding: '6px',
-                                                fontSize: '13px',
-                                                borderRadius: '6px',
-                                                border: '1px solid #ccc',
-                                                marginTop: '6px'
-                                              }}
-                                            >
-                                              <option value="allow">Allow Special Requests/Comments</option>
-                                              <option value="call">Call Server for Special Requests</option>
-                                              <option value="none">Do Not Accept Special Requests</option>
-                                            </select>
-                                          </div>
-                                          {/* Hidden File Input for Item Image */}
-                                          <input
-                                            ref={imageInputRef}
-                                            type="file"
-                                            name="image"
-                                            accept="image/*"
-                                            style={{ display: 'none' }}
-                                            onChange={handleEditChange}
-                                          />
-
-                                          {/* Save Changes Button */}
-                                          <button
-                                            onClick={handleSaveEdit}
-                                            disabled={
-                                              !editingItem.name ||
-                                              !editingItem.price ||
-                                              isNaN(editingItem.price) ||
-                                              Number(editingItem.price) <= 0
-                                            }
-                                            style={{
-                                              marginTop: '8px',
-                                              width: '100%',
-                                              padding: '6px',
-                                              backgroundColor: '#007bff',
-                                              color: '#fff',
-                                              border: 'none',
-                                              borderRadius: '6px',
-                                              cursor:
-                                                editingItem.name &&
-                                                editingItem.price &&
-                                                !isNaN(editingItem.price) &&
-                                                Number(editingItem.price) > 0
-                                                  ? 'pointer'
-                                                  : 'not-allowed',
-                                              fontSize: '14px',
-                                              opacity:
-                                                editingItem.name &&
-                                                editingItem.price &&
-                                                !isNaN(editingItem.price) &&
-                                                Number(editingItem.price) > 0
-                                                  ? 1
-                                                  : 0.5
-                                            }}
-                                          >
-                                            Save Changes
-                                          </button>
-
-                                          {/* Cancel Editing Button */}
-                                          <button
-                                            onClick={() => setEditingItem(null)}
-                                            style={{ width: '100%', marginTop: '5px' }}
-                                          >
-                                            Cancel
-                                          </button>
-                                        </>
-                                      ) : (
-                                        <>
-                                          {/* Static Display: Item Name and Price */}
-                                          <div
-                                            style={{
-                                              display: 'flex',
-                                              justifyContent: 'space-between',
-                                              alignItems: 'center',
-                                              fontWeight: 'bold',
-                                              fontSize: '16px',
-                                              marginBottom: '6px'
-                                            }}
-                                          >
-                                            <span>{item.name}</span>
-                                            <span
-                                              style={{
-                                                fontSize: '15px',
-                                                fontWeight: 'normal',
-                                                color: '#333'
-                                              }}
-                                            >
-                                              ${parseFloat(item.price).toFixed(2)}
-                                            </span>
-                                          </div>
-
-                                          {/* Static Display: Item Image */}
-                                          {item.image && (
-                                            <img
-                                              src={item.image}
-                                              alt={item.name}
-                                              style={{
-                                                width: '100%',
-                                                height: '130px',
-                                                objectFit: 'cover',
-                                                borderRadius: '6px',
-                                                marginBottom: '6px',
-                                                cursor: 'zoom-in'
-                                              }}
-                                              onClick={() => setZoomImage(item.image)}
-                                            />
-                                          )}
-
-                                          {/* Static Display: Item Description */}
-                                          {item.description && (
-                                            <div
-                                              style={{
-                                                fontSize: '13px',
-                                                color: '#555',
-                                                marginBottom: '8px'
-                                              }}
-                                            >
-                                              {item.description}
-                                            </div>
-                                          )}
-                                          {item.customizableIngredients && item.customizableIngredients.length > 0 && (
-                                            <div style={{ marginTop: '6px', fontSize: '13px' }}>
-                                              <strong>Customizable Ingredients:</strong>
-                                              <ul style={{ paddingLeft: '18px', margin: '4px 0' }}>
-                                                {item.customizableIngredients.map((ing, idx) => (
-                                                  <li key={idx}>{ing}</li>
-                                                ))}
-                                              </ul>
-                                            </div>
-                                          )}
-                                          {item.addableIngredients && item.addableIngredients.length > 0 && (
-                                            <div style={{ marginTop: '6px', fontSize: '13px' }}>
-                                              <strong>Addable Ingredients (Sauces, etc.):</strong>
-                                              <ul style={{ paddingLeft: '18px', margin: '4px 0' }}>
-                                                {item.addableIngredients.map((ing, idx) => (
-                                                  <li key={idx}>{ing}</li>
-                                                ))}
-                                              </ul>
-                                            </div>
-                                          )}
-                                          {item.notes && item.notes.length > 0 && (
-                                            <div style={{ marginTop: '8px', fontSize: '13px' }}>
-                                              <strong>Optional Notes:</strong>
-                                              <div style={{ marginTop: '4px', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                                                {item.notes.map((note, idx) => (
-                                                  <span key={idx} style={{
-                                                    backgroundColor: '#f2f2f2',
-                                                    padding: '4px 8px',
-                                                    borderRadius: '12px',
-                                                    fontSize: '12px',
-                                                    color: '#333'
-                                                  }}>
-                                                    {note}
-                                                  </span>
-                                                ))}
-                                              </div>
-                                            </div>
-                                          )}
-                                          {item.specialRequestOption && (
-                                            <div style={{ marginTop: '6px', fontSize: '13px' }}>
-                                              <strong>Special Request Option:</strong>{' '}
-                                              {item.specialRequestOption === 'allow'
-                                                ? 'Allow Special Requests/Comments'
-                                                : item.specialRequestOption === 'call'
-                                                ? 'Call Server for Special Requests'
-                                                : 'Do Not Accept Special Requests'}
-                                            </div>
-                                          )}
-
-                                          {/* Edit and Delete Buttons */}
-                                          <div
-                                            style={{
-                                              display: 'flex',
-                                              justifyContent: 'space-between'
-                                            }}
-                                          >
-                                            <button
-                                              onClick={() =>
-                                                handleEditItem(sectionKey, index)
-                                              }
-                                              style={{
-                                                backgroundColor: '#007bff',
-                                                color: '#fff',
-                                                border: 'none',
-                                                borderRadius: '6px',
-                                                padding: '6px 10px',
-                                                cursor: 'pointer',
-                                                fontSize: '12px'
-                                              }}
-                                            >
-                                              Edit
-                                            </button>
-                                            <button
-                                              onClick={() =>
-                                                handleDeleteItem(sectionKey, index)
-                                              }
-                                              style={{
-                                                backgroundColor: '#f44336',
-                                                color: '#fff',
-                                                border: 'none',
-                                                borderRadius: '6px',
-                                                padding: '6px 10px',
-                                                cursor: 'pointer',
-                                                fontSize: '12px'
-                                              }}
-                                            >
-                                              Delete
-                                            </button>
-                                          </div>
-                                        </>
-                                      )}
-                                    </div>
-                                    );
-                                    })}
-                                    </div>
-                                    {/* Delete Section Button */}
-                                    <div
-                                      style={{
-                                        display: 'flex',
-                                        justifyContent: 'flex-end',
-                                        marginTop: '20px'
-                                      }}
-                                    >
-                                      <button
-                                        onClick={() => {
-                                          setSectionToDelete(sectionKey);
-                                          setShowDeleteModal(true);
-                                        }}
-                                        style={{
-                                          backgroundColor: '#ffdddd',
-                                          border: '1px solid #ffaaaa',
-                                          color: '#a33',
-                                          borderRadius: '6px',
-                                          padding: '6px 12px',
-                                          cursor: 'pointer',
-                                          fontSize: '14px'
-                                        }}
-                                      >
-                                        Delete Section
-                                      </button>
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
-                            </Draggable>
-                          );
-                        })}
-                        {provided.placeholder}
-                      </div>
-                    )}
-                  </Droppable>
-                </DragDropContext>
-              </div>
-
-              {/* Add New Section Button */}
-              <div
-                onClick={handleAddSection}
-                style={{
-                  marginTop: '40px',
-                  padding: '20px',
-                  textAlign: 'center',
-                  cursor: 'pointer',
-                  color: '#007bff',
-                  fontWeight: 'bold',
-                  fontSize: '16px',
-                  borderTop: '1px dashed #ccc'
-                }}
-              >
-                + Add New Section
-              </div>
-            </div>
-
-            {/* Confirm Delete Section Modal */}
-            {showDeleteModal && (
-              <div
-                style={{
-                  position: 'fixed',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  zIndex: 1000
-                }}
-              >
-                <div
-                  style={{
-                    backgroundColor: '#fff',
-                    padding: '30px',
-                    borderRadius: '12px',
-                    width: '400px',
-                    textAlign: 'center',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
-                  }}
-                >
-                  <h3 style={{ marginBottom: '15px' }}>Delete Section?</h3>
-                  <p style={{ fontSize: '14px', color: '#444' }}>
-                    Are you sure you want to delete this section? This action cannot be undone.
-                  </p>
-
-                  {/* Modal Action Buttons */}
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      marginTop: '25px',
-                      gap: '12px'
-                    }}
-                  >
-                    <button
-                      onClick={() => {
-                        handleDeleteSection(sectionToDelete);
-                        setShowDeleteModal(false);
-                        setSectionToDelete(null);
-                      }}
-                      style={{
-                        padding: '8px 20px',
-                        backgroundColor: '#ff4d4f',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '6px',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      Yes, Delete
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowDeleteModal(false);
-                        setSectionToDelete(null);
-                      }}
-                      style={{
-                        padding: '8px 20px',
-                        backgroundColor: '#f0f0f0',
-                        color: '#333',
-                        border: '1px solid #ccc',
-                        borderRadius: '6px',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-            {/* Image Zoom Modal */}
-            {zoomImage && (
-              <div
-              style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: 'rgba(0, 0, 0, 0.75)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                zIndex: 2000
-              }}
-              onClick={() => setZoomImage(null)}
-              >
-                <img
-                src={zoomImage}
-                alt="Zoomed"
-                style={{
-                  maxWidth: '90%',
-                  maxHeight: '90%',
-                  borderRadius: '12px',
-                  boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
-                  cursor: 'zoom-out'
-                }}
-                />
-              </div>
-            )}
-          </>
-        );
-      };
+      {/* Modal for Zoomed Image View */}
+      <ImageZoomModal 
+        zoomImage={zoomImage} 
+        setZoomImage={setZoomImage} 
+      />
+    </>
+  );
+};
 
 export default AdminMenuPage;

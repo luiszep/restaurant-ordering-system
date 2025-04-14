@@ -1,37 +1,44 @@
+// --- React Imports ---
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+// --- AddPhoneNumberPage Component ---
 const AddPhoneNumberPage = () => {
-  const [phone, setPhone] = useState('');
-  const [isValid, setIsValid] = useState(false);
+  // --- State Declarations ---
+  const [phone, setPhone] = useState('');        // Stores raw digits (unformatted)
+  const [isValid, setIsValid] = useState(false); // Tracks if phone input is valid (10 digits)
   const navigate = useNavigate();
 
-  // Format phone number as (123) 456-7890
+  // --- Format Phone Number as (123) 456-7890 ---
   const formatPhone = (digits) => {
-    const cleaned = digits.slice(0, 10); // Max 10 digits
+    const cleaned = digits.slice(0, 10); // Ensure no more than 10 digits
     const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
     return match ? `(${match[1]}) ${match[2]}-${match[3]}` : cleaned;
   };
 
+  // --- Handle Input Changes ---
   const handleInputChange = (e) => {
-    const digits = e.target.value.replace(/\D/g, '').slice(0, 10); // Only allow 10 digits max
+    const digits = e.target.value.replace(/\D/g, '').slice(0, 10); // Strip non-digits and limit to 10
     setPhone(digits);
-    setIsValid(digits.length === 10);
+    setIsValid(digits.length === 10); // Valid only if exactly 10 digits
   };
 
+  // --- Handle Form Submit ---
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!isValid) return;
 
-    localStorage.setItem("userPhone", phone); // Save to localStorage
+    localStorage.setItem("userPhone", phone); // Store phone number locally
     console.log("Phone number submitted:", phone);
-    navigate('/admin/verify-phone');
+    navigate('/admin/verify-phone');         // Navigate to phone verification page
   };
 
+  // --- Handle Skip Button ---
   const handleSkip = () => {
-    navigate('/admin/login');
+    navigate('/admin/login'); // Go to login if user skips phone step
   };
 
+  // --- UI Rendering ---
   return (
     <div style={{
       textAlign: 'center', maxWidth: '400px', margin: 'auto', padding: '40px',
@@ -40,7 +47,9 @@ const AddPhoneNumberPage = () => {
       <h2>Add your phone number</h2>
       <p>We’ll text a security code to your mobile phone to finish setting up your account.</p>
 
+      {/* Phone Input Form */}
       <form onSubmit={handleSubmit} style={{ marginTop: '20px' }}>
+        {/* Phone Input Field with US Flag Prefix */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
@@ -65,6 +74,7 @@ const AddPhoneNumberPage = () => {
           />
         </div>
 
+        {/* Validation Message */}
         {isValid ? (
           <p style={{ color: 'green', textAlign: 'left', fontSize: '14px', margin: '5px 0 10px 2px' }}>
             ✓ Valid mobile number
@@ -75,10 +85,12 @@ const AddPhoneNumberPage = () => {
           </p>
         ) : null}
 
+        {/* Disclaimer */}
         <p style={{ fontSize: '14px', marginTop: '20px', marginBottom: '10px' }}>
           By <b>selecting Continue</b>, you agree to receive a text message with a security code. Standard rates may apply.
         </p>
 
+        {/* Continue Button */}
         <button
           type="submit"
           disabled={!isValid}
@@ -115,4 +127,5 @@ const AddPhoneNumberPage = () => {
   );
 };
 
+// --- Export Component ---
 export default AddPhoneNumberPage;

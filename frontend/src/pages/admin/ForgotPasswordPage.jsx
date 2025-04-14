@@ -1,12 +1,18 @@
+// File: src/pages/ForgotPasswordPage.jsx
+// Description: Handles the "Forgot Password" process by allowing users to request a password reset link.
+// Includes localStorage tracking to limit reset attempts to 3 per email within a 2-hour window.
+
 import React, { useState, useEffect } from 'react';
 
 const ForgotPasswordPage = () => {
+  // --- State Variables ---
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [canRequest, setCanRequest] = useState(true);
   const [clicking, setClicking] = useState(false);
   const [attemptNumber, setAttemptNumber] = useState(0);
 
+  // --- Effect: Check reset limit on email change ---
   useEffect(() => {
     const data = JSON.parse(localStorage.getItem('resetLimits')) || {};
     const record = data[email];
@@ -23,6 +29,7 @@ const ForgotPasswordPage = () => {
     }
   }, [email]);
 
+  // --- Handler: Submit password reset request ---
   const handleResetRequest = (e) => {
     e.preventDefault();
 
@@ -30,12 +37,14 @@ const ForgotPasswordPage = () => {
     const now = Date.now();
     const record = data[email];
 
+    // Deny request if already hit limit
     if (record && record.count >= 3 && now - record.timestamp < 2 * 60 * 60 * 1000) {
       setCanRequest(false);
       setMessage('You’ve reached the maximum reset attempts. Please try again in 2 hours.');
       return;
     }
 
+    // Update/reset attempt counter
     let count;
     if (!record || now - record.timestamp >= 2 * 60 * 60 * 1000) {
       count = 1;
@@ -48,7 +57,7 @@ const ForgotPasswordPage = () => {
     localStorage.setItem('resetLimits', JSON.stringify(data));
     setAttemptNumber(count);
 
-    // Set feedback message based on attempt number
+    // Show feedback message depending on the attempt count
     if (count === 1) {
       setMessage('If this email is registered, a reset link will be sent.');
     } else if (count === 2) {
@@ -57,11 +66,12 @@ const ForgotPasswordPage = () => {
       setMessage('Final reset link sent. Please check your inbox carefully.');
     }
 
-    // Visual click feedback
+    // Show brief visual feedback when clicked
     setClicking(true);
     setTimeout(() => setClicking(false), 150);
   };
 
+  // --- JSX Output ---
   return (
     <div style={{
       textAlign: 'center', padding: '50px', maxWidth: '400px',
@@ -69,6 +79,8 @@ const ForgotPasswordPage = () => {
     }}>
       <h2>Forgot Password?</h2>
       <p>Enter your email to receive a reset link.</p>
+
+      {/* Reset Form */}
       <form onSubmit={handleResetRequest}>
         <input
           type="email"
@@ -83,6 +95,7 @@ const ForgotPasswordPage = () => {
           required
           style={{ width: '94%', padding: '10px', margin: '10px 0' }}
         />
+
         <button
           type="submit"
           disabled={!canRequest}
@@ -101,7 +114,13 @@ const ForgotPasswordPage = () => {
           Send Reset Link
         </button>
       </form>
-      {message && <p style={{ color: canRequest ? 'green' : 'red', marginTop: '10px' }}>{message}</p>}
+
+      {/* Message Display */}
+      {message && (
+        <p style={{ color: canRequest ? 'green' : 'red', marginTop: '10px' }}>
+          {message}
+        </p>
+      )}
     </div>
   );
 };

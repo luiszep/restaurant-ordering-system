@@ -194,11 +194,14 @@ const SectionCard = ({
                     gridTemplateColumns: '1fr 2fr',
                     gap: '24px',
                     width: '100%',
+                    maxWidth: '850px',
                     cursor: 'pointer',
-                    padding: '10px',
-                    borderRadius: '10px',
-                    background: '#fdfdfd',
-                  }}
+                    padding: '16px',
+                    borderRadius: '16px',
+                    backgroundColor: '#fff',
+                    border: '1px solid #ddd',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
+                  }}                  
                 >
                   {/* Left Side: Image & Tags Preview (Placeholder) */}
                   <div>

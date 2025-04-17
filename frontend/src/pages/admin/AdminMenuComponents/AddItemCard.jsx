@@ -1,4 +1,5 @@
 import React from 'react';
+import './AddItemCard.css';
 
 const AddItemCard = ({
   editingItem,
@@ -21,40 +22,24 @@ const AddItemCard = ({
         style={{
           width: '100%',
           maxWidth: '850px',
-          margin: '0 auto'
-        }}
+          margin: '0 auto',
+          border: '1px solid #ddd',
+          borderRadius: '16px',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
+          backgroundColor: '#fff',
+          padding: '16px'
+        }}        
         >
-        <div className="new-item-grid">
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 2fr',
+            gap: '24px',
+            width: '100%',
+            cursor: 'default'
+          }}
+        >
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        {/* New Item Name Input */}
-        <input
-          name="name"
-          value={editingItem.name}
-          onChange={handleEditChange}
-          onBlur={saveNewItemName}
-          placeholder="Add item name"
-          style={{
-            fontWeight: 'bold',
-            fontSize: '16px',
-            width: '100%',
-            marginBottom: '8px'
-          }}
-        />
-
-        {/* New Item Price Input */}
-        <input
-          name="price"
-          value={editingItem.price}
-          onChange={handleEditChange}
-          onBlur={saveNewItemPrice}
-          placeholder="$0.00"
-          style={{
-            fontSize: '14px',
-            width: '100%',
-            marginBottom: '8px'
-          }}
-        />
-
         {/* Image Upload and Preview Area */}
         <div style={{ position: 'relative', marginBottom: '8px' }}>
           <div
@@ -148,24 +133,137 @@ const AddItemCard = ({
             }
           }}
         />
+       
+        {/* Toggle Notes */}
+        <button
+          onClick={() => setEditingItem(prev => ({
+            ...prev,
+            hasNotes: !prev.hasNotes,
+            notes: prev.hasNotes ? [] : ['']
+          }))}
+          style={{
+            width: '100%',
+            marginTop: '8px',
+            padding: '6px',
+            backgroundColor: '#fff4e6',
+            color: '#ff8c00',
+            border: '1px solid #ff8c00',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontSize: '13px'
+          }}
+        >
+          {editingItem.hasNotes ? "Remove Notes" : "Add Optional Notes (Tags)"}
+        </button>
+        {editingItem.hasNotes && (
+          <div style={{ marginTop: '8px', padding: '8px', border: '1px solid #ddd', borderRadius: '6px' }}>
+            <span style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '6px', display: 'block' }}>
+              Optional Notes (Tags):
+            </span>
+            {editingItem.notes.map((note, idx) => (
+              <input
+                key={idx}
+                type="text"
+                placeholder={`Note ${idx + 1}`}
+                value={note}
+                onChange={(e) => {
+                  const updatedNotes = [...editingItem.notes];
+                  updatedNotes[idx] = e.target.value;
+                  setEditingItem(prev => ({
+                    ...prev,
+                    notes: updatedNotes
+                  }));
+                }}
+                style={{
+                  width: '100%',
+                  marginBottom: '6px',
+                  padding: '4px',
+                  fontSize: '13px'
+                }}
+              />
+            ))}
+            {/* Button to Add Another Note */}
+            <button
+              onClick={() => setEditingItem(prev => ({
+                ...prev,
+                notes: [...prev.notes, '']
+              }))}
+              style={{
+                marginTop: '6px',
+                padding: '4px 8px',
+                fontSize: '12px',
+                backgroundColor: '#ff8c00',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              + Add Another Note
+            </button>
+          </div>
+        )}
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
+       
+        {/* --- Editable Name & Price Row --- */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            fontWeight: 'bold',
+            fontSize: '20px',
+            marginBottom: '4px'
+          }}
+        >
+          {/* Name - underline style, majority width */}
+          <input
+            name="name"
+            className="input-no-border input-title"
+            value={editingItem.name}
+            onChange={handleEditChange}
+            onBlur={saveNewItemName}
+            placeholder="Add item name"
+            style={{
+              flex: 1,
+              marginRight: '12px'
+            }}
+          />
+
+          {/* Price - boxed, right aligned, fixed width */}
+          <div className="price-input-wrapper">
+          <span className="price-dollar">$</span>
+          <input
+            name="price"
+            className="price-input"
+            value={editingItem.price}
+            onChange={(e) => {
+              const value = e.target.value.replace(/^\$/, '');
+              handleEditChange({ target: { name: 'price', value } });
+            }}
+            onBlur={saveNewItemPrice}
+            placeholder="0.00"
+          />
+        </div>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        {/* Optional Description Input */}
-        <input
+        {/* --- Editable Description Row --- */}
+        <div style={{ fontSize: '13px', color: '#999', marginBottom: '12px' }}>
+          <input
             name="description"
+            className="input-no-border input-description"
             value={editingItem.description}
             onChange={handleEditChange}
             onBlur={saveNewItemDescription}
             placeholder="Add optional description"
             style={{
               width: '100%',
-              padding: '6px',
-              fontSize: '14px',
-              marginTop: '2px',
-              boxSizing: 'border-box'
+              fontSize: '13px',
+              color: '#999'
             }}
           />
+        </div>
 
           {/* Toggle Customizable Ingredients */}
           <button
@@ -384,76 +482,6 @@ const AddItemCard = ({
                 }}
               >
                 + Add Another Addable Ingredient
-              </button>
-            </div>
-          )}
-
-          {/* Toggle Notes */}
-          <button
-            onClick={() => setEditingItem(prev => ({
-              ...prev,
-              hasNotes: !prev.hasNotes,
-              notes: prev.hasNotes ? [] : ['']
-            }))}
-            style={{
-              width: '100%',
-              marginTop: '8px',
-              padding: '6px',
-              backgroundColor: '#fff4e6',
-              color: '#ff8c00',
-              border: '1px solid #ff8c00',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontSize: '13px'
-            }}
-          >
-            {editingItem.hasNotes ? "Remove Notes" : "Add Optional Notes (Tags)"}
-          </button>
-          {editingItem.hasNotes && (
-            <div style={{ marginTop: '8px', padding: '8px', border: '1px solid #ddd', borderRadius: '6px' }}>
-              <span style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '6px', display: 'block' }}>
-                Optional Notes (Tags):
-              </span>
-              {editingItem.notes.map((note, idx) => (
-                <input
-                  key={idx}
-                  type="text"
-                  placeholder={`Note ${idx + 1}`}
-                  value={note}
-                  onChange={(e) => {
-                    const updatedNotes = [...editingItem.notes];
-                    updatedNotes[idx] = e.target.value;
-                    setEditingItem(prev => ({
-                      ...prev,
-                      notes: updatedNotes
-                    }));
-                  }}
-                  style={{
-                    width: '100%',
-                    marginBottom: '6px',
-                    padding: '4px',
-                    fontSize: '13px'
-                  }}
-                />
-              ))}
-              {/* Button to Add Another Note */}
-              <button
-                onClick={() => setEditingItem(prev => ({
-                  ...prev,
-                  notes: [...prev.notes, '']
-                }))}
-                style={{
-                  marginTop: '6px',
-                  padding: '4px 8px',
-                  fontSize: '12px',
-                  backgroundColor: '#ff8c00',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
-              >
-                + Add Another Note
               </button>
             </div>
           )}

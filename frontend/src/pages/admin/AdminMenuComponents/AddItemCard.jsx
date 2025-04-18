@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './AddItemCard.css';
+import IngredientEditor from './IngredientEditor';
 
 const AddItemCard = ({
   editingItem,
@@ -16,6 +17,13 @@ const AddItemCard = ({
   handleSaveNewItem
 }) => {
   if (!editingItem || editingItem.type !== 'new') return null;
+
+  const [showIngredientInput, setShowIngredientInput] = useState(false); 
+  const [hoveredIngredientIndex, setHoveredIngredientIndex] = useState(null);
+  const [showAddableInput, setShowAddableInput] = useState(false);
+  const [hoveredAddableIndex, setHoveredAddableIndex] = useState(null);
+  const [showTagsInput, setShowTagsInput] = useState(false);
+  const [hoveredTagIndex, setHoveredTagIndex] = useState(null);
 
   return (     
         <div
@@ -39,15 +47,15 @@ const AddItemCard = ({
             cursor: 'default'
           }}
         >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
         {/* Image Upload and Preview Area */}
         <div style={{ position: 'relative', marginBottom: '8px' }}>
           <div
             onClick={() => imageInputRef.current?.click()}
             style={{
               width: '100%',
-              height: '130px',
-              minHeight: '130px',
+              height: '175px',
+              minHeight: '175px',
               border: '1px dashed #ccc',
               borderRadius: '6px',
               display: 'flex',
@@ -133,77 +141,18 @@ const AddItemCard = ({
             }
           }}
         />
-       
-        {/* Toggle Notes */}
-        <button
-          onClick={() => setEditingItem(prev => ({
-            ...prev,
-            hasNotes: !prev.hasNotes,
-            notes: prev.hasNotes ? [] : ['']
-          }))}
-          style={{
-            width: '100%',
-            marginTop: '8px',
-            padding: '6px',
-            backgroundColor: '#fff4e6',
-            color: '#ff8c00',
-            border: '1px solid #ff8c00',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontSize: '13px'
-          }}
-        >
-          {editingItem.hasNotes ? "Remove Notes" : "Add Optional Notes (Tags)"}
-        </button>
-        {editingItem.hasNotes && (
-          <div style={{ marginTop: '8px', padding: '8px', border: '1px solid #ddd', borderRadius: '6px' }}>
-            <span style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '6px', display: 'block' }}>
-              Optional Notes (Tags):
-            </span>
-            {editingItem.notes.map((note, idx) => (
-              <input
-                key={idx}
-                type="text"
-                placeholder={`Note ${idx + 1}`}
-                value={note}
-                onChange={(e) => {
-                  const updatedNotes = [...editingItem.notes];
-                  updatedNotes[idx] = e.target.value;
-                  setEditingItem(prev => ({
-                    ...prev,
-                    notes: updatedNotes
-                  }));
-                }}
-                style={{
-                  width: '100%',
-                  marginBottom: '6px',
-                  padding: '4px',
-                  fontSize: '13px'
-                }}
-              />
-            ))}
-            {/* Button to Add Another Note */}
-            <button
-              onClick={() => setEditingItem(prev => ({
-                ...prev,
-                notes: [...prev.notes, '']
-              }))}
-              style={{
-                marginTop: '6px',
-                padding: '4px 8px',
-                fontSize: '12px',
-                backgroundColor: '#ff8c00',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer'
-              }}
-            >
-              + Add Another Note
-            </button>
-          </div>
-        )}
+        <IngredientEditor
+          type="tags"
+          editingItem={editingItem}
+          setEditingItem={setEditingItem}
+          showInput={showTagsInput}
+          setShowInput={setShowTagsInput}
+          hoveredIndex={hoveredTagIndex}
+          setHoveredIndex={setHoveredTagIndex}
+          label="ADD OPTIONAL TAGS:"
+        />
         </div>
+
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
        
         {/* --- Editable Name & Price Row --- */}
@@ -249,7 +198,7 @@ const AddItemCard = ({
         </div>
 
         {/* --- Editable Description Row --- */}
-        <div style={{ fontSize: '13px', color: '#999', marginBottom: '12px' }}>
+        <div style={{ fontSize: '13px', color: '#999'}}>
           <input
             name="description"
             className="input-no-border input-description"
@@ -265,231 +214,30 @@ const AddItemCard = ({
           />
         </div>
 
-          {/* Toggle Customizable Ingredients */}
-          <button
-            onClick={() => setEditingItem(prev => ({
-              ...prev,
-              hasCustomizableIngredients: !prev.hasCustomizableIngredients,
-              customizableIngredients: prev.hasCustomizableIngredients ? [] : ['']
-            }))}
-            style={{
-              width: '100%',
-              marginTop: '8px',
-              padding: '6px',
-              backgroundColor: '#e7f3ff',
-              color: '#007bff',
-              border: '1px solid #007bff',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontSize: '13px'
-            }}
-          >
-            {editingItem.hasCustomizableIngredients ? "Remove Customizable Ingredients" : "Add Customizable Ingredients"}
-          </button>
-          {/* Customizable Ingredients Fields */}
-          {editingItem.hasCustomizableIngredients && (
-            <div style={{ marginTop: '8px', padding: '8px', border: '1px solid #ddd', borderRadius: '6px' }}>
-              <span style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '6px', display: 'block' }}>Customizable Ingredients:</span>    
+        <IngredientEditor
+          type="customizable"
+          editingItem={editingItem}
+          setEditingItem={setEditingItem}
+          showInput={showIngredientInput}
+          setShowInput={setShowIngredientInput}
+          hoveredIndex={hoveredIngredientIndex}
+          setHoveredIndex={setHoveredIngredientIndex}
+        />
 
-
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-              {editingItem.customizableIngredients.map((ingredient, idx) => (
-                <div
-                  key={idx}
-                  style={{
-                    backgroundColor: '#f0f0f0',
-                    padding: '6px 10px',
-                    borderRadius: '16px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    fontSize: '13px',
-                    color: '#333'
-                  }}
-                >
-                  {ingredient}
-                  <span
-                    onClick={() => {
-                      const updated = [...editingItem.customizableIngredients];
-                      updated.splice(idx, 1);
-                      setEditingItem(prev => ({
-                        ...prev,
-                        customizableIngredients: updated
-                      }));
-                    }}
-                    style={{
-                      marginLeft: '8px',
-                      cursor: 'pointer',
-                      color: '#999',
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    ×
-                  </span>                               
-                </div>
-              ))}
-            </div>
-            <input
-              type="text"
-              placeholder="Type and press Enter"
-              value={editingItem.newCustomIngredient || ''}
-              onChange={(e) =>
-                setEditingItem(prev => ({ ...prev, newCustomIngredient: e.target.value }))
-              }
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && editingItem.newCustomIngredient?.trim()) {
-                  setEditingItem(prev => ({
-                    ...prev,
-                    customizableIngredients: [...prev.customizableIngredients, prev.newCustomIngredient.trim()],
-                    newCustomIngredient: ''
-                  }));
-                }
-              }}
-              style={{
-                marginTop: '8px',
-                padding: '6px',
-                fontSize: '13px',
-                width: '100%',
-                border: '1px solid #ccc',
-                borderRadius: '6px'
-              }}
-            />
-
-              {/* Button to Add Ingredient */}
-              <button
-                onClick={() => setEditingItem(prev => ({
-                  ...prev,
-                  customizableIngredients: [...prev.customizableIngredients, '']
-                }))}
-                style={{
-                  marginTop: '6px',
-                  padding: '4px 8px',
-                  fontSize: '12px',
-                  backgroundColor: '#007bff',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
-              >
-                + Add Another Ingredient
-              </button>
-            </div>
-          )}
-          {/* Toggle Addable Ingredients */}
-          <button
-            onClick={() => setEditingItem(prev => ({
-              ...prev,
-              hasAddableIngredients: !prev.hasAddableIngredients,
-              addableIngredients: prev.hasAddableIngredients ? [] : ['']
-            }))}
-            style={{
-              width: '100%',
-              marginTop: '8px',
-              padding: '6px',
-              backgroundColor: '#e7ffe7',
-              color: '#28a745',
-              border: '1px solid #28a745',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontSize: '13px'
-            }}
-          >
-            {editingItem.hasAddableIngredients ? "Remove Addable Ingredients" : "Add Addable Ingredients (Sauces, etc.)"}
-          </button>
-          
-          {/* Addable Ingredients Input Fields */}
-          {editingItem.hasAddableIngredients && (
-            <div style={{ marginTop: '8px', padding: '8px', border: '1px solid #ddd', borderRadius: '6px' }}>
-              <span style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '6px', display: 'block' }}>
-                Addable Ingredients (Sauces, etc.):
-              </span>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {editingItem.addableIngredients.map((ingredient, idx) => (
-                  <div
-                    key={idx}
-                    style={{
-                      backgroundColor: '#f0f0f0',
-                      padding: '6px 10px',
-                      borderRadius: '16px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      fontSize: '13px',
-                      color: '#333'
-                    }}
-                  >
-                    {ingredient}
-                    <span
-                      onClick={() => {
-                        const updated = [...editingItem.addableIngredients];
-                        updated.splice(idx, 1);
-                        setEditingItem(prev => ({
-                          ...prev,
-                          addableIngredients: updated
-                        }));
-                      }}
-                      style={{
-                        marginLeft: '8px',
-                        cursor: 'pointer',
-                        color: '#999',
-                        fontWeight: 'bold'
-                      }}
-                    >
-                      ×
-                    </span>
-                  </div>
-                ))}
-              </div>
-              <input
-                type="text"
-                placeholder="Type and press Enter"
-                value={editingItem.newAddableIngredient || ''}
-                onChange={(e) =>
-                  setEditingItem(prev => ({ ...prev, newAddableIngredient: e.target.value }))
-                }
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && editingItem.newAddableIngredient?.trim()) {
-                    setEditingItem(prev => ({
-                      ...prev,
-                      addableIngredients: [...prev.addableIngredients, prev.newAddableIngredient.trim()],
-                      newAddableIngredient: ''
-                    }));
-                  }
-                }}
-                style={{
-                  marginTop: '8px',
-                  padding: '6px',
-                  fontSize: '13px',
-                  width: '100%',
-                  border: '1px solid #ccc',
-                  borderRadius: '6px'
-                }}
-              />     
-              {/* Button to Add Another Ingredient */}
-              <button
-                onClick={() => setEditingItem(prev => ({
-                  ...prev,
-                  addableIngredients: [...prev.addableIngredients, '']
-                }))}
-                style={{
-                  marginTop: '6px',
-                  padding: '4px 8px',
-                  fontSize: '12px',
-                  backgroundColor: '#28a745',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
-              >
-                + Add Another Addable Ingredient
-              </button>
-            </div>
-          )}
+        <IngredientEditor
+          type="addable"
+          editingItem={editingItem}
+          setEditingItem={setEditingItem}
+          showInput={showAddableInput}
+          setShowInput={setShowAddableInput}
+          hoveredIndex={hoveredAddableIndex}
+          setHoveredIndex={setHoveredAddableIndex}
+        />
 
           {/* Special Request Dropdown */}
-          <div style={{ marginTop: '10px' }}>
+          <div style={{ marginTop: '2px' }}>
             <label htmlFor="specialRequestOption" style={{ fontSize: '13px', fontWeight: 'bold' }}>
-              Special Requests/Comments:
+              SPECIAL REQUESTS/COMMENTS:
             </label>
             <select
               name="specialRequestOption"
@@ -503,7 +251,7 @@ const AddItemCard = ({
                 fontSize: '13px',
                 borderRadius: '6px',
                 border: '1px solid #ccc',
-                marginTop: '6px'
+                marginTop: '2px'
               }}
             >
               <option value="allow">Allow Special Requests/Comments</option>
@@ -511,6 +259,7 @@ const AddItemCard = ({
               <option value="none">Do Not Accept Special Requests</option>
             </select>
           </div>
+
           {/* Save New Item Button */}
           <button
             onClick={handleSaveNewItem}

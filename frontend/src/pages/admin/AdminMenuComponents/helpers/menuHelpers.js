@@ -33,30 +33,28 @@ export const fileToBase64 = (file) => {
   
   // --- Field-specific Save Helpers ---
   
-  // Trims and saves new item's name
-  export const saveNewItemName = () => {
-    if (!editingItem?.name?.trim()) return;
-    setEditingItem((prev) => ({
+  export const saveNewItemName = (e, setEditingItem) => {
+    const name = e.target.value.trim();
+    setEditingItem(prev => ({
       ...prev,
-      name: editingItem.name.trim()
+      name
     }));
   };
   
-  // Formats and saves new item's price
-  export const saveNewItemPrice = () => {
-    if (!editingItem?.price || isNaN(editingItem.price)) return;
-    const price = parseFloat(editingItem.price);
-    setEditingItem((prev) => ({
+  export const saveNewItemPrice = (e, setEditingItem) => {
+    const raw = e.target.value.trim();
+    const parsed = raw.replace(/[^0-9.]/g, '');
+    setEditingItem(prev => ({
       ...prev,
-      price: price.toFixed(2)
+      price: parsed
     }));
   };
   
-  // Trims and saves new item's description
-  export const saveNewItemDescription = () => {
-    setEditingItem((prev) => ({
+  export const saveNewItemDescription = (e, setEditingItem) => {
+    const description = e.target.value.trim();
+    setEditingItem(prev => ({
       ...prev,
-      description: editingItem.description?.trim() || ''
+      description
     }));
-  };
+  };  
   

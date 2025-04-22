@@ -168,7 +168,41 @@ const SectionCard = ({
               {index + 1}
             </div>
 
+            {/* --- Menu Item Cards --- */}
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',   // Stack vertically
+                alignItems: 'center',      // Center horizontally
+                gap: '15px',               // Add spacing between cards
+                width: '100%'
+              }}
+            >
+              {items.items.map((item, index) => (
+                <MenuItemCard
+                  key={index}
+                  item={item}
+                  index={index}
+                  sectionKey={sectionKey}
+                  editingItem={editingItem}
+                  imageInputRef={imageInputRef}
+                  setEditingItem={setEditingItem}
+                  handleEditItem={handleEditItem}
+                  handleDeleteItem={handleDeleteItem}
+                  handleEditChange={handleEditChange}
+                  handleImageDrop={handleImageDrop}
+                  allowDrop={allowDrop}
+                  saveNewItemName={saveNewItemName}
+                  saveNewItemPrice={saveNewItemPrice}
+                  saveNewItemDescription={saveNewItemDescription}
+                  handleSaveEdit={handleSaveEdit}
+                  setZoomImage={setZoomImage}
+                />
+              ))}
+            </div>
+
             {/* --- Add Item Card --- */}
+            <div style={{ marginTop: '25px' }}>
             {editingItem?.type === 'new' && editingItem.section === sectionKey ? (
               <AddItemCard
                 editingItem={editingItem}
@@ -184,8 +218,9 @@ const SectionCard = ({
                 setEditingItem={setEditingItem}
                 handleSaveNewItem={handleSaveNewItem}
               />
-            ) : (
-              // Placeholder for new item input
+            ) : items.items.length === 0 ? (
+                // ⬇️ If NO items exist, show full mock card layout
+
               <div style={{ display: 'flex', justifyContent: 'center' }}>
                 <div
                   onClick={() => setEditingItem(getDefaultNewItem(sectionKey))}
@@ -277,31 +312,35 @@ const SectionCard = ({
                   </div>
                 </div>
               </div>
-            )}
+              
+            ) : (
 
-            {/* --- Menu Item Cards --- */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px' }}>
-              {items.items.map((item, index) => (
-                <MenuItemCard
-                  key={index}
-                  item={item}
-                  index={index}
-                  sectionKey={sectionKey}
-                  editingItem={editingItem}
-                  imageInputRef={imageInputRef}
-                  setEditingItem={setEditingItem}
-                  handleEditItem={handleEditItem}
-                  handleDeleteItem={handleDeleteItem}
-                  handleEditChange={handleEditChange}
-                  handleImageDrop={handleImageDrop}
-                  allowDrop={allowDrop}
-                  saveNewItemName={saveNewItemName}
-                  saveNewItemPrice={saveNewItemPrice}
-                  saveNewItemDescription={saveNewItemDescription}
-                  handleSaveEdit={handleSaveEdit}
-                  setZoomImage={setZoomImage}
-                />
-              ))}
+              // ⬇️ If at least 1 item exists, show cleaner + Add Item button
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+              <button
+                onClick={() => setEditingItem(getDefaultNewItem(sectionKey))}
+                style={{
+                  padding: '10px 20px',
+                  fontSize: '15px',
+                  backgroundColor: '#f4f4f4',
+                  border: '2px dashed #ccc',
+                  borderRadius: '8px',
+                  color: '#555',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s',
+                  width: '850px'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#eaeaea';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#f4f4f4';
+                }}
+              >
+                + Add Item
+              </button>
+            </div>
+            )}
             </div>
 
             {/* --- Delete Section Button --- */}

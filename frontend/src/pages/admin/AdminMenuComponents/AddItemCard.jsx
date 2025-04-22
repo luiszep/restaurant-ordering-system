@@ -28,14 +28,14 @@ const AddItemCard = ({
   return (     
         <div
         style={{
-          width: '100%',
-          maxWidth: '850px',
+          width: '850px',
           margin: '0 auto',
           border: '1px solid #ddd',
           borderRadius: '16px',
           boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
           backgroundColor: '#fff',
-          padding: '16px'
+          padding: '16px',
+          minHeight: '200px'
         }}        
         >
         <div
@@ -48,6 +48,7 @@ const AddItemCard = ({
           }}
         >
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
+
         {/* Image Upload and Preview Area */}
         <div style={{ position: 'relative', marginBottom: '8px' }}>
           <div
@@ -172,7 +173,7 @@ const AddItemCard = ({
             className="input-no-border input-title"
             value={editingItem.name}
             onChange={handleEditChange}
-            onBlur={saveNewItemName}
+            onBlur={(e) => saveNewItemName(e, setEditingItem)}
             placeholder="Add item name"
             style={{
               flex: 1,
@@ -191,7 +192,7 @@ const AddItemCard = ({
               const value = e.target.value.replace(/^\$/, '');
               handleEditChange({ target: { name: 'price', value } });
             }}
-            onBlur={saveNewItemPrice}
+            onBlur={(e) => saveNewItemPrice(e, setEditingItem)}
             placeholder="0.00"
           />
         </div>
@@ -204,7 +205,7 @@ const AddItemCard = ({
             className="input-no-border input-description"
             value={editingItem.description}
             onChange={handleEditChange}
-            onBlur={saveNewItemDescription}
+            onBlur={(e) => saveNewItemDescription(e, setEditingItem)}
             placeholder="Add optional description"
             style={{
               width: '100%',

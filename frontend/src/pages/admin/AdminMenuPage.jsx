@@ -77,7 +77,8 @@ const AdminMenuPage = () => {
       hasNotes: item.notes && item.notes.length > 0,
       specialRequestOption: item.specialRequestOption || 'allow', // default to 'allow'
       newCustomIngredient: '',
-      newAddableIngredient: '' // ✅ ADD THIS    
+      newAddableIngredient: '',
+      showTagsInput: item.tags && item.tags.length > 0  
     });    
   };
 
@@ -271,7 +272,8 @@ const AdminMenuPage = () => {
       notes: editingItem.hasNotes
         ? editingItem.notes.filter(note => note.trim() !== '')
         : [],
-      specialRequestOption: editingItem.specialRequestOption || 'allow'      
+      specialRequestOption: editingItem.specialRequestOption || 'allow',
+      tags: editingItem.tags || []
     };    
     setMenuSections((prev) => ({
       ...prev,

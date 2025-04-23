@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import IngredientEditor from './IngredientEditor';
 
 const EditItemCard = ({
@@ -14,12 +14,19 @@ const EditItemCard = ({
     setEditingItem,
     setZoomImage
   }) => {
+    const [showIngredientInput, setShowIngredientInput] = useState(false);
+    const [hoveredIngredientIndex, setHoveredIngredientIndex] = useState(null);
+    const [showAddableInput, setShowAddableInput] = useState(false);
+    const [hoveredAddableIndex, setHoveredAddableIndex] = useState(null);
+    const [showTagsInput, setShowTagsInput] = useState(false);
+    const [hoveredTagIndex, setHoveredTagIndex] = useState(null);
+
         return (
           <div
             style={{
               width: '850px',
               margin: '0 auto',
-              border: '1px solid #ddd',
+              border: '1px solid #ddd', 
               borderRadius: '16px',
               boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
               backgroundColor: '#fff',
@@ -46,8 +53,7 @@ const EditItemCard = ({
                 onDragOver={allowDrop}
                 style={{
                   width: '100%',
-                  height: '175px',
-                  minHeight: '175px',
+                  height: '180px',
                   border: '1px dashed #ccc',
                   borderRadius: '6px',
                   display: 'flex',
@@ -123,15 +129,15 @@ const EditItemCard = ({
               style={{ display: 'none' }}
               onChange={handleEditChange}
             />
-
+            
             <IngredientEditor
               type="tags"
               editingItem={editingItem}
               setEditingItem={setEditingItem}
-              showInput={editingItem.showTagsInput}
-              setShowInput={() => {}}
-              hoveredIndex={null}
-              setHoveredIndex={() => {}}
+              showInput={showTagsInput}
+              setShowInput={setShowTagsInput}
+              hoveredIndex={hoveredTagIndex}
+              setHoveredIndex={setHoveredTagIndex}
               label="ADD OPTIONAL TAGS:"
             />
 
@@ -201,20 +207,20 @@ const EditItemCard = ({
               type="customizable"
               editingItem={editingItem}
               setEditingItem={setEditingItem}
-              showInput={true}
-              setShowInput={() => {}} // No toggle needed since it's always shown for editing
-              hoveredIndex={null}
-              setHoveredIndex={() => {}}
+              showInput={showIngredientInput}
+              setShowInput={setShowIngredientInput}
+              hoveredIndex={hoveredIngredientIndex}
+              setHoveredIndex={setHoveredIngredientIndex}
             />
 
             <IngredientEditor
               type="addable"
               editingItem={editingItem}
               setEditingItem={setEditingItem}
-              showInput={true}
-              setShowInput={() => {}} // Same here
-              hoveredIndex={null}
-              setHoveredIndex={() => {}}
+              showInput={showAddableInput}
+              setShowInput={setShowAddableInput}
+              hoveredIndex={hoveredAddableIndex}
+              setHoveredIndex={setHoveredAddableIndex}
             />
 
             {/* Special Request Dropdown */}

@@ -1,6 +1,6 @@
 // --- Imports ---
 import React from "react";
-import { Draggable } from "@hello-pangea/dnd";
+import { Droppable, Draggable } from "@hello-pangea/dnd";
 import MenuItemCard from './MenuItemCard';
 import AddItemCard from './AddItemCard';
 
@@ -37,8 +37,10 @@ const SectionCard = ({
   setZoomImage,
   setShowDeleteModal,
   setSectionToDelete,
-  handleSaveEdit
+  handleSaveEdit,
+  totalSections
 }) => {
+
   return (
     <Draggable key={sectionKey} draggableId={sectionKey} index={index}>
       {(provided, snapshot) => (
@@ -178,27 +180,64 @@ const SectionCard = ({
                 width: '100%'
               }}
             >
-              {items.items.map((item, index) => (
-                <MenuItemCard
-                  key={index}
-                  item={item}
-                  index={index}
-                  sectionKey={sectionKey}
-                  editingItem={editingItem}
-                  imageInputRef={imageInputRef}
-                  setEditingItem={setEditingItem}
-                  handleEditItem={handleEditItem}
-                  handleDeleteItem={handleDeleteItem}
-                  handleEditChange={handleEditChange}
-                  handleImageDrop={handleImageDrop}
-                  allowDrop={allowDrop}
-                  saveNewItemName={saveNewItemName}
-                  saveNewItemPrice={saveNewItemPrice}
-                  saveNewItemDescription={saveNewItemDescription}
-                  handleSaveEdit={handleSaveEdit}
-                  setZoomImage={setZoomImage}
-                />
-              ))}
+            <Droppable droppableId={sectionKey} type="item">
+              {(provided) => (
+                <div
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '15px',
+                    width: '100%'
+                  }}
+                >
+                  {items.items.map((item, index) => (
+                    <Draggable
+                      key={`${sectionKey}-item-${index}`}
+                      draggableId={`${sectionKey}-item-${index}`}
+                      index={index}
+                    >
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          style={{
+                            ...provided.draggableProps.style,
+                            width: '100%',
+                            maxWidth: '850px',
+                            zIndex: snapshot.isDragging ? 100 : 'auto'
+                          }}
+                        >
+                          <MenuItemCard
+                            key={index}
+                            item={item}
+                            index={index}
+                            sectionKey={sectionKey}
+                            editingItem={editingItem}
+                            imageInputRef={imageInputRef}
+                            setEditingItem={setEditingItem}
+                            handleEditItem={handleEditItem}
+                            handleDeleteItem={handleDeleteItem}
+                            handleEditChange={handleEditChange}
+                            handleImageDrop={handleImageDrop}
+                            allowDrop={allowDrop}
+                            saveNewItemName={saveNewItemName}
+                            saveNewItemPrice={saveNewItemPrice}
+                            saveNewItemDescription={saveNewItemDescription}
+                            handleSaveEdit={handleSaveEdit}
+                            setZoomImage={setZoomImage}
+                          />
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
             </div>
 
             {/* --- Add Item Card --- */}
@@ -344,25 +383,28 @@ const SectionCard = ({
             </div>
 
             {/* --- Delete Section Button --- */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
-              <button
-                onClick={() => {
-                  setSectionToDelete(sectionKey);
-                  setShowDeleteModal(true);
-                }}
-                style={{
-                  backgroundColor: '#ffdddd',
-                  border: '1px solid #ffaaaa',
-                  color: '#a33',
-                  borderRadius: '6px',
-                  padding: '6px 12px',
-                  cursor: 'pointer',
-                  fontSize: '14px'
-                }}
-              >
-                Delete Section
-              </button>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px', minHeight: '38px' }}>
+            {totalSections > 1 && (
+                <button
+                  onClick={() => {
+                    setSectionToDelete(sectionKey);
+                    setShowDeleteModal(true);
+                  }}
+                  style={{
+                    backgroundColor: '#ffdddd',
+                    border: '1px solid #ffaaaa',
+                    color: '#a33',
+                    borderRadius: '6px',
+                    padding: '6px 12px',
+                    cursor: 'pointer',
+                    fontSize: '14px'
+                  }}
+                >
+                  Delete Section
+                </button>
+            )}
             </div>
+
           </div>
         </div>
       )}

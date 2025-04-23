@@ -24,6 +24,8 @@ const AddItemCard = ({
   const [hoveredAddableIndex, setHoveredAddableIndex] = useState(null);
   const [showTagsInput, setShowTagsInput] = useState(false);
   const [hoveredTagIndex, setHoveredTagIndex] = useState(null);
+  const [viewMode, setViewMode] = useState('detailed'); // or 'summarized'
+
 
   return (     
         <div
@@ -55,8 +57,7 @@ const AddItemCard = ({
             onClick={() => imageInputRef.current?.click()}
             style={{
               width: '100%',
-              height: '175px',
-              minHeight: '175px',
+              height: '180px',
               border: '1px dashed #ccc',
               borderRadius: '6px',
               display: 'flex',

@@ -5,10 +5,6 @@
 
 
 
-
-
-
-
 // MenuItemCard.jsx
 // This component displays a single menu item card with editable and static states.
 

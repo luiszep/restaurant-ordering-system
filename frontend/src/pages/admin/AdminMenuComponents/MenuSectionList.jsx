@@ -78,6 +78,7 @@ const MenuSectionList = ({
                     setShowDeleteModal={setShowDeleteModal}
                     setSectionToDelete={setSectionToDelete}
                     handleSaveEdit={handleSaveEdit}
+                    totalSections={sectionOrder.length}
                   />
                 );
               })}

@@ -2,7 +2,7 @@
 // Description: Admin interface for managing restaurant menu sections and items.
 
 // --- Imports ---
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import MenuSectionList from './AdminMenuComponents/MenuSectionList';
 import {
   fileToBase64,
@@ -13,6 +13,9 @@ import {
 } from './AdminMenuComponents/helpers/menuHelpers';
 import DeleteSectionModal from './AdminMenuComponents/modals/DeleteSectionModal';
 import ImageZoomModal from './AdminMenuComponents/modals/ImageZoomModal';
+import MenuViewToggle from './AdminMenuComponents/MenuViewToggle';
+import SummarizedMenuList from './AdminMenuComponents/SummarizedMenuList';
+
 
 // --- Initial States ---
 const initialSections = {
@@ -25,6 +28,7 @@ const initialSections = {
 // --- AdminMenuPage Component ---
 const AdminMenuPage = () => {
   // --- State Declarations ---
+  
   const [menuSections, setMenuSections] = useState(initialSections);         // Menu data
   const [sectionOrder, setSectionOrder] = useState(Object.keys(initialSections)); // Order of sections
 
@@ -33,26 +37,14 @@ const AdminMenuPage = () => {
 
   const [sectionCounter, setSectionCounter] = useState(2);                   // Counter for creating new section keys
 
-  const [showTip, setShowTip] = useState(                                   // Tooltip visibility for section renaming tip
-    !localStorage.getItem('adminMenuRenameTipShown')
-  );
-
   const [sectionToDelete, setSectionToDelete] = useState(null);             // Key of section to delete
   const [showDeleteModal, setShowDeleteModal] = useState(false);            // Show/hide confirmation modal
-  const [zoomImage, setZoomImage] = useState(null);                          // Image source for zoom preview
+  const [zoomImage, setZoomImage] = useState(null);    
+  // Image source for zoom preview
 
   const imageInputRef = useRef(null);                                        // Ref for image file input
 
-  // --- Effects ---
-  useEffect(() => {
-    if (showTip) {
-      const timer = setTimeout(() => {
-        setShowTip(false);
-        localStorage.setItem('adminMenuRenameTipShown', 'true');
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [showTip]);
+  const [viewMode, setViewMode] = useState('detailed');
 
   // --- Item Deletion ---
   const handleDeleteItem = (section, index) => {
@@ -73,13 +65,13 @@ const AdminMenuPage = () => {
       customizableIngredients: item.customizableIngredients || [],
       hasAddableIngredients: item.addableIngredients && item.addableIngredients.length > 0,
       addableIngredients: item.addableIngredients || [],
-      notes: item.notes || [],
-      hasNotes: item.notes && item.notes.length > 0,
-      specialRequestOption: item.specialRequestOption || 'allow', // default to 'allow'
+      tags: item.tags || [],
+      hasTags: item.tags && item.tags.length > 0,
+      specialRequestOption: item.specialRequestOption || 'allow',
       newCustomIngredient: '',
       newAddableIngredient: '',
-      showTagsInput: item.tags && item.tags.length > 0  
-    });    
+      newTag: ''      
+    }); 
   };
 
   // --- Handle Input Change While Editing Item ---
@@ -156,11 +148,11 @@ const AdminMenuPage = () => {
       addableIngredients: editingItem.hasAddableIngredients
         ? editingItem.addableIngredients.filter(ing => ing.trim() !== '')
         : [],
-      notes: editingItem.hasNotes
-        ? editingItem.notes.filter(note => note.trim() !== '')
-        : [],
-      specialRequestOption: editingItem.specialRequestOption || 'allow'
-    };   
+      tags: editingItem.hasTags
+        ? editingItem.tags.filter(tag => tag.trim() !== '')
+        : [],      
+      specialRequestOption: editingItem.specialRequestOption || 'allow',
+    };    
 
     setMenuSections(updated);
     setEditingItem(null);
@@ -233,14 +225,19 @@ const AdminMenuPage = () => {
 
   // Updates order of sections after drag-and-drop event
   const handleDragEnd = (result) => {
-    if (!result.destination) return;
+    if (result.type === 'section') {
+      if (!result.destination) return;
 
-    const newOrder = Array.from(sectionOrder);
-    const [moved] = newOrder.splice(result.source.index, 1);
-    newOrder.splice(result.destination.index, 0, moved);
+      const newOrder = Array.from(sectionOrder);
+      const [moved] = newOrder.splice(result.source.index, 1);
+      newOrder.splice(result.destination.index, 0, moved);
 
-    setSectionOrder(newOrder);
+      setSectionOrder(newOrder);
+    } else if (result.type === 'item') {
+      handleItemDragEnd(result);
+    }
   };
+
 
   // --- New Item Creation Handlers ---
 
@@ -269,11 +266,10 @@ const AdminMenuPage = () => {
       addableIngredients: editingItem.hasAddableIngredients
         ? editingItem.addableIngredients.filter(ing => ing.trim() !== '')
         : [],
-      notes: editingItem.hasNotes
-        ? editingItem.notes.filter(note => note.trim() !== '')
-        : [],
+        tags: editingItem.hasTags
+        ? editingItem.tags.filter(tag => tag.trim() !== '')
+        : [],      
       specialRequestOption: editingItem.specialRequestOption || 'allow',
-      tags: editingItem.tags || []
     };    
     setMenuSections((prev) => ({
       ...prev,
@@ -287,30 +283,37 @@ const AdminMenuPage = () => {
     setEditingItem(null);
   };
 
+  // ----- Handle Item Dragging -------
+  const handleItemDragEnd = (result) => {
+    const { source, destination, type } = result;
+  
+    // Exit early if dropped outside a droppable
+    if (!destination || type !== "item") return;
+  
+    // Exit if item didn't move
+    if (
+      source.droppableId === destination.droppableId &&
+      source.index === destination.index
+    ) return;
+  
+    const sectionKey = source.droppableId;
+    const updatedSections = { ...menuSections };
+    const items = Array.from(updatedSections[sectionKey].items);
+    const [movedItem] = items.splice(source.index, 1);
+    items.splice(destination.index, 0, movedItem);
+    updatedSections[sectionKey].items = items;
+  
+    setMenuSections(updatedSections);
+  };  
+
   // --- UI Rendering ---
   return (
     <>
-      {/* Tip for renaming sections */}
-      {showTip && (
-        <div
-          style={{
-            backgroundColor: '#fffbe6',
-            padding: '10px 15px',
-            border: '1px solid #ffe58f',
-            borderRadius: '8px',
-            margin: '20px 30px',
-            color: '#8c6d1f',
-            fontSize: '14px',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-          }}
-        >
-          <span>💡 Tip: Click section titles to rename them!</span>
-        </div>
-      )}
-
       {/* Main Menu Management Container */}
-      <div style={{ padding: '30px' }}>
+      <div style={{ padding: '0px' }}>
         <h2>Menu Management</h2>
+        <MenuViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+        {viewMode === 'detailed' ? (
         <MenuSectionList
           sectionOrder={sectionOrder}
           menuSections={menuSections}
@@ -337,6 +340,13 @@ const AdminMenuPage = () => {
           handleSaveEdit={handleSaveEdit}
           handleDragEnd={handleDragEnd}
         />
+
+      ) : (
+        <SummarizedMenuList
+          menuSections={menuSections}
+          sectionOrder={sectionOrder}
+        />
+      )}
 
         {/* Add New Section Button */}
         <div

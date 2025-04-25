@@ -227,18 +227,32 @@ const AdminMenuPage = () => {
   const handleDragEnd = (result) => {
     if (result.type === 'section') {
       if (!result.destination) return;
-
       const newOrder = Array.from(sectionOrder);
       const [moved] = newOrder.splice(result.source.index, 1);
       newOrder.splice(result.destination.index, 0, moved);
 
       setSectionOrder(newOrder);
+
     } else if (result.type === 'item') {
       handleItemDragEnd(result);
     }
   };
 
-
+  const handleManualSectionReorder = (oldIndex, newIndex) => {
+    if (
+      newIndex < 0 ||
+      newIndex >= sectionOrder.length ||
+      newIndex === oldIndex
+    ) return;
+  
+    const newOrder = Array.from(sectionOrder);
+    const [moved] = newOrder.splice(oldIndex, 1);
+    newOrder.splice(newIndex, 0, moved);
+  
+    setSectionOrder(newOrder);
+  };
+  
+  
   // --- New Item Creation Handlers ---
 
   // Validates and saves newly created item to a section
@@ -315,6 +329,7 @@ const AdminMenuPage = () => {
         <MenuViewToggle viewMode={viewMode} setViewMode={setViewMode} />
         {viewMode === 'detailed' ? (
         <MenuSectionList
+          key = "detailed"
           sectionOrder={sectionOrder}
           menuSections={menuSections}
           editingTitles={editingTitles}
@@ -345,6 +360,9 @@ const AdminMenuPage = () => {
         <SummarizedMenuList
           menuSections={menuSections}
           sectionOrder={sectionOrder}
+          setZoomImage={setZoomImage}
+          handleManualSectionReorder={handleManualSectionReorder}
+          key="summarized"
         />
       )}
 

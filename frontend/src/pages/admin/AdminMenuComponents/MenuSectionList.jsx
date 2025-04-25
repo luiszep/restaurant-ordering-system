@@ -37,7 +37,7 @@ const MenuSectionList = ({
     <div style={{ position: 'relative', overflow: 'hidden', marginTop: '30px' }}>
       {/* Initialize Drag and Drop */}
       <DragDropContext onDragEnd={handleDragEnd}>
-        <Droppable droppableId="sections">
+        <Droppable droppableId="sections" type="section">
           {(provided) => (
             <div
               ref={provided.innerRef}

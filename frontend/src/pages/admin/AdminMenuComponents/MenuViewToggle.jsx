@@ -10,6 +10,7 @@ const MenuViewToggle = ({ viewMode, setViewMode }) => {
     borderRadius: '999px',
     overflow: 'hidden'
   }}>
+    {/* Detailed View Button */}
     <button
       onClick={() => setViewMode('detailed')}
       style={{
@@ -19,7 +20,14 @@ const MenuViewToggle = ({ viewMode, setViewMode }) => {
         fontWeight: 'bold',
         border: 'none',
         borderRadius: '999px 0 0 999px',
-        cursor: 'pointer'
+        cursor: 'pointer',
+        transition: 'background-color 0.2s'
+      }}
+      onMouseEnter={(e) => {
+        if (viewMode !== 'detailed') e.currentTarget.style.backgroundColor = '#eee';
+      }}
+      onMouseLeave={(e) => {
+        if (viewMode !== 'detailed') e.currentTarget.style.backgroundColor = '#fff';
       }}
     >
       Detailed View
@@ -33,7 +41,14 @@ const MenuViewToggle = ({ viewMode, setViewMode }) => {
         fontWeight: 'bold',
         border: 'none',
         borderRadius: '0 999px 999px 0',
-        cursor: 'pointer'
+        cursor: 'pointer',
+        transition: 'background-color 0.2s'
+      }}
+      onMouseEnter={(e) => {
+        if (viewMode !== 'summarized') e.currentTarget.style.backgroundColor = '#eee';
+      }}
+      onMouseLeave={(e) => {
+        if (viewMode !== 'summarized') e.currentTarget.style.backgroundColor = '#fff';
       }}
     >
       Summarized View

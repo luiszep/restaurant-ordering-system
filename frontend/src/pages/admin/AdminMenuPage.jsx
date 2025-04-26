@@ -30,12 +30,10 @@ const AdminMenuPage = () => {
   // --- State Declarations ---
   
   const [menuSections, setMenuSections] = useState(initialSections);         // Menu data
-  const [sectionOrder, setSectionOrder] = useState(Object.keys(initialSections)); // Order of sections
+  const [sectionOrder, setSectionOrder] = useState(Object.keys(initialSections));
 
   const [editingTitles, setEditingTitles] = useState({});                     // Tracks which section titles are in edit mode
   const [editingItem, setEditingItem] = useState(null);                       // The currently edited item
-
-  const [sectionCounter, setSectionCounter] = useState(2);                   // Counter for creating new section keys
 
   const [sectionToDelete, setSectionToDelete] = useState(null);             // Key of section to delete
   const [showDeleteModal, setShowDeleteModal] = useState(false);            // Show/hide confirmation modal
@@ -192,66 +190,55 @@ const AdminMenuPage = () => {
 
   // Adds a new menu section to the interface
   const handleAddSection = () => {
-    const newKey = `section${sectionCounter}`;
-    setMenuSections((prev) => ({
-      ...prev,
+    // Find all existing valid section numbers
+    const usedNumbers = Object.keys(menuSections)
+      .map(key => {
+        const match = key.match(/section(\d+)/);
+        return match ? parseInt(match[1]) : null;
+      })
+      .filter(num => num !== null);
+  
+    // Find the lowest unused section number
+    let nextNumber = 1;
+    while (usedNumbers.includes(nextNumber)) {
+      nextNumber++;
+    }
+  
+    const newKey = `section${nextNumber}`;
+  
+    // Add new section
+    const updatedSections = {
+      ...menuSections,
       [newKey]: {
         title: "Name this section (e.g., Appetizers, Mains, etc.)",
         items: []
       }
-    }));
-    setSectionOrder((prev) => [...prev, newKey]);
-    setSectionCounter((prev) => prev + 1);
-  };
+    };
+  
+    setMenuSections(updatedSections);
+  
+    // 💥 Reset the sectionOrder cleanly based on updatedSections keys
+    setSectionOrder(Object.keys(updatedSections));
+  };  
 
   // Deletes an entire section and cleans related state
   const handleDeleteSection = (sectionKey) => {
     const updatedSections = { ...menuSections };
-
     delete updatedSections[sectionKey];
-
+  
     setMenuSections(updatedSections);
-
-    setSectionOrder((prev) => prev.filter((key) => key !== sectionKey));
-
+  
     setEditingTitles((prev) => {
       const copy = { ...prev };
       delete copy[sectionKey];
       return copy;
     });
-
+  
     setEditingItem((prev) => (prev?.section === sectionKey ? null : prev));
-  };
-
-  // Updates order of sections after drag-and-drop event
-  const handleDragEnd = (result) => {
-    if (result.type === 'section') {
-      if (!result.destination) return;
-      const newOrder = Array.from(sectionOrder);
-      const [moved] = newOrder.splice(result.source.index, 1);
-      newOrder.splice(result.destination.index, 0, moved);
-
-      setSectionOrder(newOrder);
-
-    } else if (result.type === 'item') {
-      handleItemDragEnd(result);
-    }
-  };
-
-  const handleManualSectionReorder = (oldIndex, newIndex) => {
-    if (
-      newIndex < 0 ||
-      newIndex >= sectionOrder.length ||
-      newIndex === oldIndex
-    ) return;
   
-    const newOrder = Array.from(sectionOrder);
-    const [moved] = newOrder.splice(oldIndex, 1);
-    newOrder.splice(newIndex, 0, moved);
-  
-    setSectionOrder(newOrder);
-  };
-  
+    // 💥 Update the sectionOrder cleanly after deletion
+    setSectionOrder(Object.keys(updatedSections));
+  };  
   
   // --- New Item Creation Handlers ---
 
@@ -297,28 +284,38 @@ const AdminMenuPage = () => {
     setEditingItem(null);
   };
 
-  // ----- Handle Item Dragging -------
-  const handleItemDragEnd = (result) => {
-    const { source, destination, type } = result;
-  
-    // Exit early if dropped outside a droppable
-    if (!destination || type !== "item") return;
-  
-    // Exit if item didn't move
+  // ---- Handle Section Reordering in Summarized View ------
+  const handleManualSectionReorder = (oldIndex, newIndex) => {
     if (
-      source.droppableId === destination.droppableId &&
-      source.index === destination.index
+      newIndex < 0 ||
+      newIndex >= sectionOrder.length ||
+      newIndex === oldIndex
     ) return;
   
-    const sectionKey = source.droppableId;
-    const updatedSections = { ...menuSections };
-    const items = Array.from(updatedSections[sectionKey].items);
-    const [movedItem] = items.splice(source.index, 1);
-    items.splice(destination.index, 0, movedItem);
-    updatedSections[sectionKey].items = items;
+    const newOrder = Array.from(sectionOrder);
+    const [moved] = newOrder.splice(oldIndex, 1);
+    newOrder.splice(newIndex, 0, moved);
   
-    setMenuSections(updatedSections);
+    setSectionOrder(newOrder);
   };  
+
+  // ---- Handle Manual Item Reordering (by number) inside a Section ------
+  const handleManualItemReorder = (sectionKey, oldIndex, newIndex) => {
+    if (!menuSections[sectionKey] || newIndex < 0 || newIndex >= menuSections[sectionKey].items.length) return;
+
+    const updatedSection = { ...menuSections[sectionKey] };
+    const items = [...updatedSection.items];
+    const [movedItem] = items.splice(oldIndex, 1);
+    items.splice(newIndex, 0, movedItem);
+
+    setMenuSections((prev) => ({
+      ...prev,
+      [sectionKey]: {
+        ...prev[sectionKey],
+        items,
+      },
+    }));
+  };
 
   // --- UI Rendering ---
   return (
@@ -329,9 +326,9 @@ const AdminMenuPage = () => {
         <MenuViewToggle viewMode={viewMode} setViewMode={setViewMode} />
         {viewMode === 'detailed' ? (
         <MenuSectionList
-          key = "detailed"
-          sectionOrder={sectionOrder}
+          key="detailed"
           menuSections={menuSections}
+          sectionOrder={sectionOrder}
           editingTitles={editingTitles}
           editingItem={editingItem}
           imageInputRef={imageInputRef}
@@ -353,7 +350,6 @@ const AdminMenuPage = () => {
           setShowDeleteModal={setShowDeleteModal}
           setSectionToDelete={setSectionToDelete}
           handleSaveEdit={handleSaveEdit}
-          handleDragEnd={handleDragEnd}
         />
 
       ) : (
@@ -362,6 +358,7 @@ const AdminMenuPage = () => {
           sectionOrder={sectionOrder}
           setZoomImage={setZoomImage}
           handleManualSectionReorder={handleManualSectionReorder}
+          handleManualItemReorder={handleManualItemReorder}
           key="summarized"
         />
       )}

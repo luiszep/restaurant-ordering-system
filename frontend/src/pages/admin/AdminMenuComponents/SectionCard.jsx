@@ -1,11 +1,10 @@
 // --- Imports ---
 import React from "react";
-import { Droppable, Draggable } from "@hello-pangea/dnd";
 import MenuItemCard from './MenuItemCard';
 import AddItemCard from './AddItemCard';
 
 // --- SectionCard Component ---
-// Represents a draggable menu section, including:
+// Represents a menu section, including:
 // - Section title (editable)
 // - Add new item card or placeholder
 // - Menu item cards
@@ -13,13 +12,10 @@ import AddItemCard from './AddItemCard';
 const SectionCard = ({
   sectionKey,
   index,
-  items,
   editingTitles,
   menuSections,
   editingItem,
   imageInputRef,
-  snapshot,
-  provided,
   handleTitleChange,
   handleTitleBlur,
   toggleEditingTitle,
@@ -38,65 +34,45 @@ const SectionCard = ({
   setShowDeleteModal,
   setSectionToDelete,
   handleSaveEdit,
-  totalSections
+  
 }) => {
 
+  const section = menuSections[sectionKey];
+
+  // --- ADD THIS GUARD CHECK ---
+  if (!section) {
+    return null; // Section was deleted -> don't try to render anything
+  }
+  
+  // Then continue as normal:
   return (
-    <Draggable key={sectionKey} draggableId={sectionKey} index={index}>
-      {(provided, snapshot) => (
         <div
-          ref={provided.innerRef}
-          {...provided.draggableProps}
           style={{
-            ...provided.draggableProps.style,
-            transform: provided.draggableProps.style?.transform,
+            display: 'flex',
+            flexDirection: 'column',
             marginBottom: '20px',
-            transition: 'transform 200ms ease, box-shadow 200ms ease',
-            boxShadow: snapshot.isDragging ? '0 4px 12px rgba(0,0,0,0.15)' : 'none',
+            backgroundColor: '#f9f9f9',
+            padding: '20px',
             borderRadius: '12px',
-            background: snapshot.isDragging ? '#e6f7ff' : 'transparent',
-            zIndex: snapshot.isDragging ? 100 : 'auto'
+            border: '1.5px solid #ccc',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.05)',
+            position: 'relative'
           }}
         >
-          {/* --- Section Container --- */}
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              marginBottom: '20px',
-              backgroundColor: snapshot.isDragging ? '#e6f7ff' : '#f9f9f9',
-              padding: '20px',
-              borderRadius: '12px',
-              border: '1.5px solid #ccc',
-              boxShadow: '0 2px 6px rgba(0,0,0,0.05)',
-              position: 'relative'
-            }}
-          >
-            {/* --- Section Title and Drag Handle --- */}
+    
+            {/* --- Section Title --- */}
             <div
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                marginBottom: '20px',
-                cursor: snapshot.isDragging ? 'grabbing' : 'grab'
+                marginBottom: '20px'
               }}
-              {...provided.dragHandleProps}
             >
-              <span
-                style={{
-                  marginRight: '10px',
-                  fontSize: '18px',
-                  userSelect: 'none'
-                }}
-                title="Drag to reorder"
-              >
-                ≡
-              </span>
 
               {editingTitles[sectionKey] ? (
                 <input
                   type="text"
-                  value={menuSections[sectionKey].title}
+                  value={section.title}
                   onChange={(e) => handleTitleChange(e, sectionKey)}
                   onBlur={() => handleTitleBlur(sectionKey)}
                   onKeyDown={(e) => {
@@ -135,7 +111,7 @@ const SectionCard = ({
                       transition: 'color 0.2s'
                     }}
                   >
-                    {menuSections[sectionKey].title}
+                    {section.title}
                   </h2>
                   <span
                     className="edit-icon"
@@ -174,70 +150,35 @@ const SectionCard = ({
             <div
               style={{
                 display: 'flex',
-                flexDirection: 'column',   // Stack vertically
-                alignItems: 'center',      // Center horizontally
-                gap: '15px',               // Add spacing between cards
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '15px',
                 width: '100%'
               }}
             >
-            <Droppable droppableId={sectionKey} type="item">
-              {(provided) => (
-                <div
-                  ref={provided.innerRef}
-                  {...provided.droppableProps}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: '15px',
-                    width: '100%'
-                  }}
-                >
-                  {items.items.map((item, index) => (
-                    <Draggable
-                      key={`${sectionKey}-item-${index}`}
-                      draggableId={`${sectionKey}-item-${index}`}
-                      index={index}
-                    >
-                      {(provided, snapshot) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                          style={{
-                            ...provided.draggableProps.style,
-                            width: '100%',
-                            maxWidth: '850px',
-                            zIndex: snapshot.isDragging ? 100 : 'auto'
-                          }}
-                        >
-                          <MenuItemCard
-                            key={index}
-                            item={item}
-                            index={index}
-                            sectionKey={sectionKey}
-                            editingItem={editingItem}
-                            imageInputRef={imageInputRef}
-                            setEditingItem={setEditingItem}
-                            handleEditItem={handleEditItem}
-                            handleDeleteItem={handleDeleteItem}
-                            handleEditChange={handleEditChange}
-                            handleImageDrop={handleImageDrop}
-                            allowDrop={allowDrop}
-                            saveNewItemName={saveNewItemName}
-                            saveNewItemPrice={saveNewItemPrice}
-                            saveNewItemDescription={saveNewItemDescription}
-                            handleSaveEdit={handleSaveEdit}
-                            setZoomImage={setZoomImage}
-                          />
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
+              {section.items.map((item, index) => (
+                <div key={`${sectionKey}-item-${index}`} style={{ width: '100%', maxWidth: '850px' }}>
+                  <MenuItemCard
+                    key={index}
+                    item={item}
+                    index={index}
+                    sectionKey={sectionKey}
+                    editingItem={editingItem}
+                    imageInputRef={imageInputRef}
+                    setEditingItem={setEditingItem}
+                    handleEditItem={handleEditItem}
+                    handleDeleteItem={handleDeleteItem}
+                    handleEditChange={handleEditChange}
+                    handleImageDrop={handleImageDrop}
+                    allowDrop={allowDrop}
+                    saveNewItemName={saveNewItemName}
+                    saveNewItemPrice={saveNewItemPrice}
+                    saveNewItemDescription={saveNewItemDescription}
+                    handleSaveEdit={handleSaveEdit}
+                    setZoomImage={setZoomImage}
+                  />
                 </div>
-              )}
-            </Droppable>
+              ))}
             </div>
 
             {/* --- Add Item Card --- */}
@@ -257,9 +198,9 @@ const SectionCard = ({
                 setEditingItem={setEditingItem}
                 handleSaveNewItem={handleSaveNewItem}
               />
-            ) : items.items.length === 0 ? (
-                // ⬇️ If NO items exist, show full mock card layout
+            ) : section.items.length === 0 ? (
 
+              // ⬇️ If NO items exist, show full mock card layout
               <div style={{ display: 'flex', justifyContent: 'center' }}>
                 <div
                   onClick={() => setEditingItem(getDefaultNewItem(sectionKey))}
@@ -274,8 +215,8 @@ const SectionCard = ({
                     borderRadius: '16px',
                     backgroundColor: '#fff',
                     border: '1px solid #ddd',
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
-                  }}                  
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)'
+                  }}
                 >
                   {/* Left Side: Image & Tags Preview (Placeholder) */}
                   <div>
@@ -317,7 +258,6 @@ const SectionCard = ({
                     <div style={{ fontSize: '13px', color: '#999', marginBottom: '12px' }}>
                       Add optional description
                     </div>
-
                     <div style={{ fontWeight: 'bold', fontSize: '14px', marginBottom: '4px' }}>
                       Add Optional Customizable Ingredients:
                     </div>
@@ -351,64 +291,63 @@ const SectionCard = ({
                   </div>
                 </div>
               </div>
-              
+
             ) : (
 
               // ⬇️ If at least 1 item exists, show cleaner + Add Item button
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
-              <button
-                onClick={() => setEditingItem(getDefaultNewItem(sectionKey))}
-                style={{
-                  padding: '10px 20px',
-                  fontSize: '15px',
-                  backgroundColor: '#f4f4f4',
-                  border: '2px dashed #ccc',
-                  borderRadius: '8px',
-                  color: '#555',
-                  cursor: 'pointer',
-                  transition: 'background-color 0.2s',
-                  width: '850px'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#eaeaea';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = '#f4f4f4';
-                }}
-              >
-                + Add Item
-              </button>
-            </div>
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+                <button
+                  onClick={() => setEditingItem(getDefaultNewItem(sectionKey))}
+                  style={{
+                    padding: '10px 20px',
+                    fontSize: '15px',
+                    backgroundColor: '#f4f4f4',
+                    border: '2px dashed #ccc',
+                    borderRadius: '8px',
+                    color: '#555',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s',
+                    width: '850px'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#eaeaea';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#f4f4f4';
+                  }}
+                >
+                  + Add Item
+                </button>
+              </div>
+
             )}
             </div>
 
             {/* --- Delete Section Button --- */}
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px', minHeight: '38px' }}>
-            {totalSections > 1 && (
-                <button
-                  onClick={() => {
-                    setSectionToDelete(sectionKey);
-                    setShowDeleteModal(true);
-                  }}
-                  style={{
-                    backgroundColor: '#ffdddd',
-                    border: '1px solid #ffaaaa',
-                    color: '#a33',
-                    borderRadius: '6px',
-                    padding: '6px 12px',
-                    cursor: 'pointer',
-                    fontSize: '14px'
-                  }}
-                >
-                  Delete Section
-                </button>
+            {/* Only show delete button if there are multiple sections */}
+            {Object.keys(menuSections).length > 1 && (
+              <button
+                onClick={() => {
+                  setSectionToDelete(sectionKey);
+                  setShowDeleteModal(true);
+                }}
+                style={{
+                  backgroundColor: '#ffdddd',
+                  border: '1px solid #ffaaaa',
+                  color: '#a33',
+                  borderRadius: '6px',
+                  padding: '6px 12px',
+                  cursor: 'pointer',
+                  fontSize: '14px'
+                }}
+              >
+                Delete Section
+              </button>
             )}
             </div>
 
           </div>
-        </div>
-      )}
-    </Draggable>
   );
 };
 

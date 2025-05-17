@@ -19,6 +19,17 @@ import AdminPaymentsPage from './pages/admin/AdminPaymentsPage';
 import AdminOrdersPage from './pages/admin/AdminOrdersPage';
 import AdminStaffPage from './pages/admin/AdminStaffPage';
 
+import CustomerMenuPage from './pages/customer/CustomerMenuPage';
+import CustomerCartPage from './pages/customer/CustomerCartPage';
+import CustomerOrderSummaryPage from './pages/customer/CustomerOrderSummaryPage';
+import CustomerTraditionalPaymentPage from './pages/customer/CustomerTraditionalPaymentPage';
+import CustomerOnlinePaymentPage from './pages/customer/CustomerOnlinePaymentPage';
+import CustomerPaymentSuccessPage from './pages/customer/CustomerPaymentSuccessPage';
+import CustomerPaymentFailedPage from './pages/customer/CustomerPaymentFailedPage';
+import CustomerReceiptPage from './pages/customer/CustomerReceiptPage';
+import SessionExpiredPage from './pages/customer/SessionExpiredPage';
+import ServerRequestPage from './pages/customer/ServerRequestPage';
+
 function App() {
   return (
     <Router>
@@ -26,6 +37,16 @@ function App() {
         {/* Public & Customer Routes */}
         <Route path="/" element={<Home />} />
         <Route path="/table/:tableId" element={<TablePage />} />
+        <Route path="/menu/:sessionId" element={<CustomerMenuPage />} />
+        <Route path="/cart" element={<CustomerCartPage />} />
+        <Route path="/order-summary" element={<CustomerOrderSummaryPage />} />
+        <Route path="/pay-traditional" element={<CustomerTraditionalPaymentPage />} />
+        <Route path="/pay-online" element={<CustomerOnlinePaymentPage />} />
+        <Route path="/payment-success" element={<CustomerPaymentSuccessPage />} />
+        <Route path="/payment-failed" element={<CustomerPaymentFailedPage />} />
+        <Route path="/receipt" element={<CustomerReceiptPage />} />
+        <Route path="/session-expired" element={<SessionExpiredPage />} />
+        <Route path="/request-help" element={<ServerRequestPage />} />
 
         {/* Admin Onboarding / Auth */}
         <Route path="/admin/login" element={<AdminAuthPage />} />
@@ -45,7 +66,7 @@ function App() {
           <Route path="tables" element={<AdminTablesPage />} />
           <Route path="payments" element={<AdminPaymentsPage />} />
           <Route path="orders" element={<AdminOrdersPage />} />
-          <Route path="staff" element={<AdminStaffPage />} />
+          <Route path="staff" element={<AdminStaffPage />} /> 
         </Route>
       </Routes>
     </Router>

@@ -2,7 +2,7 @@
 // Description: Admin interface for managing restaurant menu sections and items.
 
 // --- Imports ---
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import MenuSectionList from './AdminMenuComponents/MenuSectionList';
 import {
   fileToBase64,
@@ -29,8 +29,15 @@ const initialSections = {
 const AdminMenuPage = () => {
   // --- State Declarations ---
   
-  const [menuSections, setMenuSections] = useState(initialSections);         // Menu data
-  const [sectionOrder, setSectionOrder] = useState(Object.keys(initialSections));
+  const [menuSections, setMenuSections] = useState(() => {
+    const savedSections = localStorage.getItem('menuSections');
+    return savedSections ? JSON.parse(savedSections) : initialSections;
+  });
+  
+  const [sectionOrder, setSectionOrder] = useState(() => {
+    const savedOrder = localStorage.getItem('sectionOrder');
+    return savedOrder ? JSON.parse(savedOrder) : Object.keys(initialSections);
+  });  
 
   const [editingTitles, setEditingTitles] = useState({});                     // Tracks which section titles are in edit mode
   const [editingItem, setEditingItem] = useState(null);                       // The currently edited item
@@ -316,6 +323,13 @@ const AdminMenuPage = () => {
       },
     }));
   };
+
+  // --- Auto-Save to LocalStorage Whenever Menu Changes ---
+  useEffect(() => {
+    localStorage.setItem('menuSections', JSON.stringify(menuSections));
+    localStorage.setItem('sectionOrder', JSON.stringify(sectionOrder));
+  }, [menuSections, sectionOrder]);
+
 
   // --- UI Rendering ---
   return (

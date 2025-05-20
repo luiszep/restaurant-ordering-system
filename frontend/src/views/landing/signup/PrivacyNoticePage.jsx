@@ -1,7 +1,11 @@
 import React from 'react';
+import MobileBlockMessage from "../../../components/MobileBlockMessage";
 
 const PrivacyNoticePage = () => {
   return (
+    <>
+    <MobileBlockMessage />
+    <div className="hidden md:block">
     <div className="min-h-screen bg-[url('/images/modern-pattern-bg.png')] bg-repeat bg-center bg-black text-white px-6 py-16">
       <div className="max-w-3xl mx-auto bg-gray-900 border border-green-500 rounded-xl shadow-xl p-8 space-y-6">
         <h1 className="text-3xl font-bold text-center text-green-400">Privacy Notice</h1>
@@ -61,6 +65,8 @@ const PrivacyNoticePage = () => {
         </p>
       </div>
     </div>
+    </div>
+    </>
   );
 };
 

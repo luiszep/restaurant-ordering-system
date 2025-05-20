@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import MobileBlockMessage from "../../../components/MobileBlockMessage";
 
 const AddPhoneNumberPage = () => {
   const [phone, setPhone] = useState('');
@@ -32,6 +33,9 @@ const AddPhoneNumberPage = () => {
   };
 
   return (
+    <>
+    <MobileBlockMessage />
+    <div className="hidden md:block">
     <div className="min-h-screen bg-[url('/images/modern-pattern-bg.png')] bg-repeat bg-center bg-black text-white flex items-center justify-center px-4">
       <div className="bg-gray-900 border border-green-500 rounded-xl shadow-xl w-full max-w-md p-8 space-y-6 text-center">
         <h2 className="text-3xl font-bold">Add your phone number</h2>
@@ -81,6 +85,8 @@ const AddPhoneNumberPage = () => {
         </form>
       </div>
     </div>
+    </div>
+    </>
   );
 };
 

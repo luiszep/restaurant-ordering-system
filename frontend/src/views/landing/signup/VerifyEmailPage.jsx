@@ -1,8 +1,6 @@
-// File: src/views/landing/signup/VerifyEmailPage.jsx
-// Description: Handles email verification with cooldowns, attempts, and validation.
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import MobileBlockMessage from "../../../components/MobileBlockMessage";
 
 const VerifyEmailPage = () => {
   const navigate = useNavigate();
@@ -133,6 +131,9 @@ const VerifyEmailPage = () => {
   };
 
   return (
+    <>
+    <MobileBlockMessage />
+    <div className="hidden md:block">     
     <div className="min-h-screen bg-[url('/images/modern-pattern-bg.png')] bg-repeat bg-center bg-black text-white flex items-center justify-center px-4">
       <div className="bg-gray-900 border border-green-500 rounded-xl shadow-xl w-full max-w-md p-8 space-y-6 text-center">
         <h2 className="text-3xl font-bold">Verify your email address</h2>
@@ -193,6 +194,8 @@ const VerifyEmailPage = () => {
         )}
       </div>
     </div>
+    </div>
+    </>
   );
 };
 

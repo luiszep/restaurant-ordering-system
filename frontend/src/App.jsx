@@ -17,7 +17,7 @@ import VerifyPhonePage from './views/landing/signup/VerifyPhonePage.jsx';
 import SuccessPage from './views/landing/signup/SuccessPage.jsx';
 
 //Admin Dashboard
-import AdminDashboardPage from './views/admin/AdminDashboardPage.jsx';
+import AdminDashboardPage from './views/admin/dashboard/AdminDashboardPage.jsx';
 
 export default function App() {
   return (

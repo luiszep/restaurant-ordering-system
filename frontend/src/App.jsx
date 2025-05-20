@@ -16,6 +16,9 @@ import AddPhoneNumberPage from './views/landing/signup/AddPhoneNumberPage.jsx';
 import VerifyPhonePage from './views/landing/signup/VerifyPhonePage.jsx';
 import SuccessPage from './views/landing/signup/SuccessPage.jsx';
 
+//Admin Dashboard
+import AdminDashboardPage from './views/admin/AdminDashboardPage.jsx';
+
 export default function App() {
   return (
     <Router>
@@ -35,6 +38,9 @@ export default function App() {
         <Route path="/admin/add-phone-number" element={<AddPhoneNumberPage />} />
         <Route path="/admin/verify-phone" element={<VerifyPhonePage />} />
         <Route path="/admin/success" element={<SuccessPage />} />
+
+        {/* Admin Dashboard */}
+        <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
       </Routes>
     </Router>
   );

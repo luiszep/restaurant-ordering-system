@@ -16,8 +16,20 @@ import AddPhoneNumberPage from './views/landing/signup/AddPhoneNumberPage.jsx';
 import VerifyPhonePage from './views/landing/signup/VerifyPhonePage.jsx';
 import SuccessPage from './views/landing/signup/SuccessPage.jsx';
 
-//Admin Dashboard
+// Admin Dashboard
 import AdminDashboardPage from './views/admin/dashboard/AdminDashboardPage.jsx';
+
+// Restaurant Subdashboard Layout + Pages
+import RestaurantDashboardLayout from './views/admin/restaurantDashboard/RestaurantDashboardLayout';
+import KDSPage from './views/admin/kds';
+import OrdersPage from './views/admin/orders';
+import MenuPage from './views/admin/menu';
+import TransactionsPage from './views/admin/transactions';
+import ReportsPage from './views/admin/reports';
+import TimerPage from './views/admin/timer';
+import TablesPage from './views/admin/tables';
+import PromotionsPage from './views/admin/promotions';
+import SettingsPage from './views/admin/settings';
 
 export default function App() {
   return (
@@ -39,8 +51,22 @@ export default function App() {
         <Route path="/admin/verify-phone" element={<VerifyPhonePage />} />
         <Route path="/admin/success" element={<SuccessPage />} />
 
-        {/* Admin Dashboard */}
+        {/* Admin Dashboard Home */}
         <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+
+        {/* Restaurant Subdashboard Layout with Nested Routes */}
+        <Route path="/admin/restaurant/:id" element={<RestaurantDashboardLayout />}>
+          <Route index element={<KDSPage />} />
+          <Route path="kds" element={<KDSPage />} />
+          <Route path="orders" element={<OrdersPage />} />
+          <Route path="menu" element={<MenuPage />} />
+          <Route path="transactions" element={<TransactionsPage />} />
+          <Route path="reports" element={<ReportsPage />} />
+          <Route path="timer" element={<TimerPage />} />
+          <Route path="tables" element={<TablesPage />} />
+          <Route path="promotions" element={<PromotionsPage />} />
+          <Route path="settings" element={<SettingsPage />} />
+        </Route>
       </Routes>
     </Router>
   );

@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { NavLink, Outlet, useParams } from 'react-router-dom';
+import { NavLink, Outlet, useParams, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -29,6 +29,8 @@ const navItems = [
 const RestaurantDashboardLayout = () => {
   const { id } = useParams();
   const [copied, setCopied] = useState(false);
+  const location = useLocation();
+  const isMenuPage = location.pathname.endsWith('/menu');
 
   const restaurant = useMemo(() => {
     const stored = localStorage.getItem('adminRestaurants');
@@ -89,7 +91,7 @@ const RestaurantDashboardLayout = () => {
                 setCopied(true);
                 setTimeout(() => setCopied(false), 2000);
               }}
-              className="opacity-0 group-hover:opacity-100 transition-opacity"
+              className="opacity-100 group-hover:opacity-100 transition-opacity"
               title="Copy to clipboard"
             >
               <Copy size={14} className="text-gray-400 hover:text-white" />
@@ -104,7 +106,11 @@ const RestaurantDashboardLayout = () => {
         </div>
 
         {/* Main page content */}
-        <div className="p-10 flex-1 bg-[#0c0c0c]">
+        <div
+          className={`flex-1 ${
+            isMenuPage ? 'bg-white text-black' : 'bg-[#0c0c0c] text-white'
+          }`}
+        >
           <Outlet />
         </div>
       </main>

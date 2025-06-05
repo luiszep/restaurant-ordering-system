@@ -23,7 +23,7 @@ import AdminDashboardPage from './views/admin/dashboard/AdminDashboardPage.jsx';
 import RestaurantDashboardLayout from './views/admin/restaurantDashboard/RestaurantDashboardLayout';
 import KDSPage from './views/admin/kds';
 import OrdersPage from './views/admin/orders';
-import MenuPage from './views/admin/menu';
+import MenuPage from './views/admin/menu/MenuPage';
 import TransactionsPage from './views/admin/transactions';
 import ReportsPage from './views/admin/reports';
 import TimerPage from './views/admin/timer';

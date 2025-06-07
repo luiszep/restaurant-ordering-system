@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useParams } from 'react-router-dom';
 import MenuListSidebar from './MenuListSidebar';
 import MenuEditorPanel from './MenuEditorPanel';
 import MenuBuilderTabs from './MenuBuilderTabs';
@@ -51,19 +52,19 @@ const defaultMenus = [
   },
 ];
 
-const LOCAL_KEYS = {
-  MENUS: 'menus',
-  SELECTED_MENU_ID: 'selectedMenuId',
-};
-
 const MenuPage = () => {
+  const { id: restaurantId } = useParams();
+  
+  const menusKey = `menus-${restaurantId}`;
+  const selectedMenuKey = `selectedMenuId-${restaurantId}`;
+  
   const [menus, setMenus] = useState(() => {
-    const stored = localStorage.getItem(LOCAL_KEYS.MENUS);
+    const stored = localStorage.getItem(menusKey);
     return stored ? JSON.parse(stored) : [...defaultMenus];
   });
 
   const [selectedMenuId, setSelectedMenuId] = useState(() => {
-    const stored = localStorage.getItem(LOCAL_KEYS.SELECTED_MENU_ID);
+    const stored = localStorage.getItem(selectedMenuKey);
     return stored ? JSON.parse(stored) : 1;
   });
 
@@ -73,12 +74,12 @@ const MenuPage = () => {
   );
 
   useEffect(() => {
-    localStorage.setItem(LOCAL_KEYS.MENUS, JSON.stringify(menus));
-  }, [menus]);
+    localStorage.setItem(menusKey, JSON.stringify(menus));
+  }, [menus, menusKey]);
 
   useEffect(() => {
-    localStorage.setItem(LOCAL_KEYS.SELECTED_MENU_ID, JSON.stringify(selectedMenuId));
-  }, [selectedMenuId]);
+    localStorage.setItem(selectedMenuKey, JSON.stringify(selectedMenuId));
+  }, [selectedMenuId, selectedMenuKey]);
 
   const updateMenu = (id, updates) => {
     setMenus((prev) =>

@@ -88,6 +88,15 @@ export default function useRestaurantModals(restaurants, setRestaurants) {
     const updatedList = restaurants.filter((r) => r.id !== restaurantToDelete.id);
     setRestaurants(updatedList);
     localStorage.setItem('adminRestaurants', JSON.stringify(updatedList));
+
+    // 🧼 Clean up restaurant-scoped localStorage keys
+    const restaurantId = restaurantToDelete.id;
+    localStorage.removeItem(`menus-${restaurantId}`);
+    localStorage.removeItem(`selectedMenuId-${restaurantId}`);
+
+    // ✅ (Optional in future) add additional keys tied to the restaurant
+    // e.g. localStorage.removeItem(`categories-${restaurantId}`)
+
     setShowDeleteModal(false);
     setRestaurantToDelete(null);
   };

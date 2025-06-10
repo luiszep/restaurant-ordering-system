@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import MenuListSidebar from './MenuListSidebar';
-import MenuEditorPanel from './MenuEditorPanel';
+import MenuListSidebar from './menus/MenuListSidebar';
+import MenuEditorPanel from './menus/MenuEditorPanel';
 import MenuBuilderTabs from './MenuBuilderTabs';
 
 const defaultMenus = [

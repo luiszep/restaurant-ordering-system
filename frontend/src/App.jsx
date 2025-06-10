@@ -31,6 +31,11 @@ import TablesPage from './views/admin/tables';
 import PromotionsPage from './views/admin/promotions';
 import SettingsPage from './views/admin/settings';
 
+// Customer Pages
+import CustomerLandingPage from './views/customer/landing/CustomerLandingPage';
+import CustomerMenuPage from './views/customer/menu/CustomerMenuPage';
+import CustomerHostessPage from './views/customer/landing/CustomerHostessPage.jsx';
+
 export default function App() {
   return (
     <Router>
@@ -67,6 +72,11 @@ export default function App() {
           <Route path="promotions" element={<PromotionsPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
+
+        {/* Customer Pages */}     
+        <Route path="/customer/:id/hostess" element={<CustomerHostessPage />} />
+        <Route path="/customer/:id/landing" element={<CustomerLandingPage />} />
+        <Route path="/customer/:id/menu" element={<CustomerMenuPage />} />
       </Routes>
     </Router>
   );

@@ -1,6 +1,7 @@
 import React from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 
+// Tab definitions
 const TABS = [
   { label: 'Menus', path: 'menus', enabled: true },
   { label: 'Categories', path: 'categories', enabled: true },
@@ -8,9 +9,15 @@ const TABS = [
   { label: 'Modifiers', path: 'modifiers', enabled: false },
 ];
 
-const MenuBuilderTabs = ({ activeTab = 'Menus' }) => {
+const MenuBuilderTabs = () => {
   const navigate = useNavigate();
   const { id: restaurantId } = useParams();
+  const location = useLocation();
+
+  // Dynamically determine active tab from pathname
+  const activePathSegment = location.pathname.split('/menus')[1]?.split('/')[1] || '';
+  const activeTab = activePathSegment === '' ? 'Menus' : 
+    TABS.find(tab => tab.path === activePathSegment)?.label;
 
   const handleClick = (tab) => {
     if (!tab.enabled) {
@@ -18,7 +25,8 @@ const MenuBuilderTabs = ({ activeTab = 'Menus' }) => {
       return;
     }
 
-    navigate(`/admin/restaurant/${restaurantId}/${tab.path}`);
+    const subpath = tab.path === 'menus' ? '' : `/${tab.path}`;
+    navigate(`/admin/restaurant/${restaurantId}/menus${subpath}`);
   };
 
   return (

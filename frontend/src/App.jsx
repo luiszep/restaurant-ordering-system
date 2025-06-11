@@ -23,7 +23,6 @@ import AdminDashboardPage from './views/admin/dashboard/AdminDashboardPage.jsx';
 import RestaurantDashboardLayout from './views/admin/restaurantDashboard/RestaurantDashboardLayout';
 import KDSPage from './views/admin/kds';
 import OrdersPage from './views/admin/orders';
-import MenuPage from './views/admin/menu/MenuPage';
 import TransactionsPage from './views/admin/transactions';
 import ReportsPage from './views/admin/reports';
 import TimerPage from './views/admin/timer';
@@ -31,11 +30,13 @@ import TablesPage from './views/admin/tables';
 import PromotionsPage from './views/admin/promotions';
 import SettingsPage from './views/admin/settings';
 
+// Menu Builder Pages (refactored)
+import MenuBuilderPage from './views/admin/menu/MenuBuilderPage.jsx';
+
 // Customer Pages
 import CustomerLandingPage from './views/customer/landing/CustomerLandingPage';
 import CustomerMenuPage from './views/customer/menu/CustomerMenuPage';
 import CustomerHostessPage from './views/customer/landing/CustomerHostessPage.jsx';
-import CategoryPage from './views/admin/menu/CategoryPage.jsx';
 
 export default function App() {
   return (
@@ -65,8 +66,7 @@ export default function App() {
           <Route index element={<KDSPage />} />
           <Route path="kds" element={<KDSPage />} />
           <Route path="orders" element={<OrdersPage />} />
-          <Route path="menus" element={<MenuPage />} />
-          <Route path="categories" element={<CategoryPage />} />
+          <Route path="menus/*" element={<MenuBuilderPage />} />
           <Route path="transactions" element={<TransactionsPage />} />
           <Route path="reports" element={<ReportsPage />} />
           <Route path="timer" element={<TimerPage />} />
@@ -75,7 +75,7 @@ export default function App() {
           <Route path="settings" element={<SettingsPage />} />
         </Route>
 
-        {/* Customer Pages */}     
+        {/* Customer Pages */}
         <Route path="/customer/:id/hostess" element={<CustomerHostessPage />} />
         <Route path="/customer/:id/landing" element={<CustomerLandingPage />} />
         <Route path="/customer/:id/menu" element={<CustomerMenuPage />} />

@@ -1,89 +1,26 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useMemo } from 'react';
 import CategoryListSidebar from './categories/CategoryListSidebar';
 import CategoryEditorPanel from './categories/CategoryEditorPanel';
-import MenuBuilderTabs from './MenuBuilderTabs';
 
-const defaultCategories = [
-  {
-    id: 'cat-1',
-    name: 'Sandwiches 🥪',
-    autoExpand: false, // ✅ Updated from expandOnLoad
-    description: '',
-    items: [
-      { id: 'item-1', name: 'Ham Sandwich 🥪', price: 5.99, available: true },
-      { id: 'item-2', name: 'Turkey Club 🥪', price: 6.49, available: true },
-      { id: 'item-3', name: 'BLT 🥓', price: 5.29, available: false },
-    ],
-  },
-  {
-    id: 'cat-2',
-    name: 'Breakfast Specials 🍳',
-    autoExpand: true,
-    description: 'Start your day right.',
-    items: [],
-  },
-  {
-    id: 'cat-3',
-    name: 'Desserts 🍰',
-    autoExpand: false,
-    description: '',
-    items: [],
-  },
-];
-
-const CategoryPage = () => {
-  const { id: restaurantId } = useParams();
-
-  const categoriesKey = `categories-restaurant-${restaurantId}`;
-  const selectedCategoryKey = `selectedCategoryId-${restaurantId}`;
-
-  const [categories, setCategories] = useState(() => {
-    const stored = localStorage.getItem(categoriesKey);
-    return stored ? JSON.parse(stored) : [...defaultCategories];
-  });
-
-  const [selectedCategoryId, setSelectedCategoryId] = useState(() => {
-    const stored = localStorage.getItem(selectedCategoryKey);
-    return stored ? JSON.parse(stored) : categories[0]?.id || null;
-  });
-
-  const selectedCategory = useMemo(
-    () => categories.find((cat) => cat.id === selectedCategoryId),
-    [categories, selectedCategoryId]
-  );
-
-  useEffect(() => {
-    localStorage.setItem(categoriesKey, JSON.stringify(categories));
-  }, [categories, categoriesKey]);
-
-  useEffect(() => {
-    localStorage.setItem(selectedCategoryKey, JSON.stringify(selectedCategoryId));
-  }, [selectedCategoryId, selectedCategoryKey]);
-
-  const updateCategory = (id, updates) => {
-    setCategories((prev) =>
-      prev.map((cat) => (cat.id === id ? { ...cat, ...updates } : cat))
-    );
-  };
-
-  const deleteCategory = (idToDelete) => {
-    setCategories((prev) => {
-      const updated = prev.filter((c) => c.id !== idToDelete);
-      if (idToDelete === selectedCategoryId) {
-        setSelectedCategoryId(updated[0]?.id || null);
-      }
-      return updated;
-    });
-  };
+const CategoryPage = ({
+  categories = [], // Default categories to an empty array if not provided
+  setCategories,
+  selectedCategoryId,
+  setSelectedCategoryId,
+  selectedCategory,
+  updateCategory,
+  deleteCategory,
+}) => {
+  // Ensure selectedCategory is properly set (use the first category as a fallback if none is selected)
+  const currentCategory = useMemo(() => {
+    return selectedCategory || categories.find((cat) => cat.id === selectedCategoryId) || null;
+  }, [categories, selectedCategoryId, selectedCategory]);
 
   return (
     <div className="flex flex-col h-full w-full bg-white">
-      {/* Tabs: MENUS | CATEGORIES | ITEMS | MODIFIERS */}
-      <MenuBuilderTabs activeTab="Categories" />
-
-      {/* Main Layout */}
+      {/* Layout for Sidebar and Category Editor Panel */}
       <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar with List of Categories */}
         <CategoryListSidebar
           categories={categories}
           setCategories={setCategories}
@@ -91,11 +28,12 @@ const CategoryPage = () => {
           setSelectedCategoryId={setSelectedCategoryId}
         />
 
+        {/* Category Editor Panel */}
         <div className="flex-1 bg-gray-50 p-6 overflow-y-auto">
-          {selectedCategory ? (
+          {currentCategory ? (
             <CategoryEditorPanel
-              key={selectedCategory.id}
-              selectedCategory={selectedCategory}
+              key={currentCategory.id}
+              selectedCategory={currentCategory}
               updateCategory={updateCategory}
               deleteCategory={deleteCategory}
             />

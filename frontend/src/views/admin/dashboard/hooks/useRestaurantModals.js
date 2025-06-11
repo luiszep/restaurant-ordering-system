@@ -94,7 +94,7 @@ export default function useRestaurantModals(restaurants, setRestaurants) {
     // 🧼 Clean up all restaurant-specific localStorage keys
     localStorage.removeItem(`menus-${restaurantId}`);
     localStorage.removeItem(`selectedMenuId-${restaurantId}`);
-    localStorage.removeItem(`categories-restaurant-${restaurantId}`);
+    localStorage.removeItem(`categories-${restaurantId}`);
     localStorage.removeItem(`selectedCategoryId-${restaurantId}`);
     localStorage.removeItem(`items-restaurant-${restaurantId}`);
     localStorage.removeItem(`selectedItemId-${restaurantId}`);

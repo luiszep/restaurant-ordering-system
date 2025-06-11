@@ -1,4 +1,6 @@
 import React, { useState, useMemo } from 'react';
+import MenuSearchInput from '../components/listSidebarComponents/MenuSearchInput';
+import CategoryList from '../components/listSidebarComponents/CategoryList';
 
 const CategoryListSidebar = ({
   categories,
@@ -32,55 +34,24 @@ const CategoryListSidebar = ({
 
   return (
     <div className="w-[260px] bg-white border-r border-gray-200 flex flex-col p-4">
-      {/* Search Input */}
-      <div className="mb-4">
-        <input
-          type="text"
+      {/* This fills the vertical space above the button */}
+      <div className="flex-1 flex flex-col">
+        <MenuSearchInput
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
           placeholder="Search categories..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-800 placeholder-gray-500 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400"
+        />
+        
+        <CategoryList
+          categories={categories}
+          filteredCategories={filteredCategories}
+          selectedCategoryId={selectedCategoryId}
+          handleCategoryClick={handleCategoryClick}
+          isSearchActive={isSearchActive}
         />
       </div>
 
-      {/* Category List */}
-      <div className="flex-1 overflow-y-auto space-y-2">
-        {isSearchActive ? (
-          filteredCategories.length > 0 ? (
-            filteredCategories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => handleCategoryClick(cat.id)}
-                className={`w-full px-4 py-2 text-left rounded-md border ${
-                  selectedCategoryId === cat.id
-                    ? 'bg-pink-500 text-white font-semibold'
-                    : 'bg-gray-100 text-gray-800 hover:bg-pink-100'
-                }`}
-              >
-                {cat.name}
-              </button>
-            ))
-          ) : (
-            <p className="text-sm text-gray-400 italic">No matching categories.</p>
-          )
-        ) : (
-          categories.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => handleCategoryClick(cat.id)}
-              className={`w-full px-4 py-2 text-left rounded-md border ${
-                selectedCategoryId === cat.id
-                  ? 'bg-pink-500 text-white font-semibold'
-                  : 'bg-gray-100 text-gray-800 hover:bg-pink-100'
-              }`}
-            >
-              {cat.name}
-            </button>
-          ))
-        )}
-      </div>
-
-      {/* Create Category Button */}
+      {/* Button always pinned to bottom */}
       <button
         onClick={handleCreateCategory}
         className="mt-4 py-2 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-md"

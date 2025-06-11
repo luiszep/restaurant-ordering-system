@@ -10,14 +10,7 @@ const timeOptions = Array.from({ length: 96 }, (_, i) => {
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-const DEFAULT_CATEGORIES = [
-  { id: "cat-1", name: "Sandwiches 🥪", items: 6 },
-  { id: "cat-2", name: "Breakfast Specials 🍳", items: 4 },
-  { id: "cat-3", name: "Desserts 🍰", items: 2 },
-  { id: "cat-4", name: "Drinks 🧃", items: 3 },
-];
-
-const MenuEditorPanel = ({ selectedMenu, updateMenu, deleteMenu }) => {
+const MenuEditorPanel = ({ selectedMenu, updateMenu, deleteMenu, categories }) => {
   // ----- State -----
   const [isEditingName, setIsEditingName] = useState(false);
   const [menuName, setMenuName] = useState('');
@@ -26,10 +19,9 @@ const MenuEditorPanel = ({ selectedMenu, updateMenu, deleteMenu }) => {
   const [endTime, setEndTime] = useState('N/A');
   const [timeError, setTimeError] = useState('');
   const [description, setDescription] = useState('');
-  const [categories, setCategories] = useState([]);
+  const [menuCategoryIds, setMenuCategoryIds] = useState([]);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [selectedCategoryIds, setSelectedCategoryIds] = useState([]);
-  const [availableCategories] = useState(DEFAULT_CATEGORIES);
 
   // ----- Effects -----
   useEffect(() => {
@@ -40,8 +32,11 @@ const MenuEditorPanel = ({ selectedMenu, updateMenu, deleteMenu }) => {
     setStartTime(selectedMenu.startTime || '00:00:00');
     setEndTime(selectedMenu.endTime || 'N/A');
     setDescription(selectedMenu.description || '');
-    setCategories(selectedMenu.categories || []);
-  }, [selectedMenu]);
+    const validIds = (selectedMenu.categories || []).filter(id =>
+      categories.some(c => c.id === id)
+    );
+    setMenuCategoryIds(validIds);
+  }, [selectedMenu, categories]);
 
   // ----- Handlers -----
   const toggleDay = (day) => {
@@ -74,22 +69,22 @@ const MenuEditorPanel = ({ selectedMenu, updateMenu, deleteMenu }) => {
 
   const handleDragEnd = (result) => {
     if (!result.destination) return;
-    const reordered = [...categories];
+    const reordered = [...menuCategoryIds];
     const [moved] = reordered.splice(result.source.index, 1);
     reordered.splice(result.destination.index, 0, moved);
-    setCategories(reordered);
+    setMenuCategoryIds(reordered);
     updateMenu?.(selectedMenu.id, { categories: reordered });
   };
 
   const handleDeleteCategory = (id) => {
-    const updated = categories.filter((catId) => catId !== id);
-    setCategories(updated);
+    const updated = menuCategoryIds.filter((catId) => catId !== id);
+    setMenuCategoryIds(updated);
     updateMenu?.(selectedMenu.id, { categories: updated });
   };
 
   const handleAddSelectedCategories = () => {
-    const updated = [...categories, ...selectedCategoryIds];
-    setCategories(updated);
+    const updated = Array.from(new Set([...menuCategoryIds, ...selectedCategoryIds]));
+    setMenuCategoryIds(updated);
     updateMenu?.(selectedMenu.id, { categories: updated });
     setShowCategoryModal(false);
     setSelectedCategoryIds([]);
@@ -153,6 +148,8 @@ const MenuEditorPanel = ({ selectedMenu, updateMenu, deleteMenu }) => {
           <div>
             <label className="block text-sm text-gray-700 mb-1">Start Time</label>
             <select
+              id="start-time"
+              aria-label="Start Time"
               value={startTime}
               onChange={(e) => handleStartTimeChange(e.target.value)}
               className={`border ${timeError ? 'border-red-500' : 'border-gray-300'} rounded px-2 py-1 text-sm`}
@@ -168,6 +165,8 @@ const MenuEditorPanel = ({ selectedMenu, updateMenu, deleteMenu }) => {
             <div>
               <label className="block text-sm text-gray-700 mb-1">End Time</label>
               <select
+                id="end-time"
+                aria-label="End Time"
                 value={endTime}
                 onChange={(e) => handleEndTimeChange(e.target.value)}
                 className={`border ${timeError ? 'border-red-500' : 'border-gray-300'} rounded px-2 py-1 text-sm`}
@@ -210,12 +209,14 @@ const MenuEditorPanel = ({ selectedMenu, updateMenu, deleteMenu }) => {
           <h2 className="text-lg font-semibold">
             Categories in {menuName || 'Unnamed'} Menu
           </h2>
-          <button
-            onClick={() => setShowCategoryModal(true)}
-            className="text-sm bg-green-100 text-green-700 font-medium px-3 py-1 rounded hover:bg-green-200 transition"
-          >
-            + Add Category
-          </button>
+          {menuCategoryIds.length < categories.length && (
+            <button
+              onClick={() => setShowCategoryModal(true)}
+              className="text-sm bg-green-100 text-green-700 font-medium px-3 py-1 rounded hover:bg-green-200 transition"
+            >
+              + Add Category
+            </button>
+          )}
         </div>
 
         <div className="border border-gray-200 rounded-md overflow-hidden">
@@ -230,12 +231,19 @@ const MenuEditorPanel = ({ selectedMenu, updateMenu, deleteMenu }) => {
             <Droppable droppableId="category-list">
               {(provided) => (
                 <div ref={provided.innerRef} {...provided.droppableProps}>
-                  {categories.map((catId, index) => {
-                    const cat = availableCategories.find((c) => c.id === catId);
-                    if (!cat) return null;
+                  {menuCategoryIds.map((catId, index) => {
+                    const cat = categories.find((c) => c.id === catId);
+                    if (!cat) {
+                      console.warn(`Category ID "${catId}" not found in global categories list.`);
+                      return null;
+                    }
+
+                    const itemCount = Array.isArray(cat.items)
+                      ? cat.items.length
+                      : 0;
 
                     return (
-                      <Draggable key={cat.id} draggableId={cat.id} index={index}>
+                      <Draggable key={String(cat.id)} draggableId={String(cat.id)} index={index}>
                         {(provided) => (
                           <div
                             ref={provided.innerRef}
@@ -246,8 +254,8 @@ const MenuEditorPanel = ({ selectedMenu, updateMenu, deleteMenu }) => {
                               <span {...provided.dragHandleProps} className="cursor-move text-lg">≡</span>
                               <span className="text-gray-500">#{index + 1}</span>
                             </div>
-                            <div className="text-blue-600">{cat.name}</div>
-                            <div>{cat.items}</div>
+                            <div className="text-blue-600">{typeof cat.name === 'string' ? cat.name : 'Unnamed'}</div>
+                            <div>{itemCount} {itemCount === 1 ? 'item' : 'items'}</div>
                             <div>
                               <button
                                 onClick={() => handleDeleteCategory(cat.id)}
@@ -275,24 +283,25 @@ const MenuEditorPanel = ({ selectedMenu, updateMenu, deleteMenu }) => {
           <h3 className="text-lg font-semibold mb-4">Select Categories to Add</h3>
 
           <div className="space-y-2 max-h-60 overflow-y-auto">
-            {availableCategories
-              .filter((cat) => !categories.includes(cat.id))
-              .map((cat) => (
-                <label key={cat.id} className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={selectedCategoryIds.includes(cat.id)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSelectedCategoryIds((prev) => [...prev, cat.id]);
-                      } else {
-                        setSelectedCategoryIds((prev) => prev.filter((id) => id !== cat.id));
-                      }
-                    }}
-                  />
-                  <span>{cat.name}</span>
-                </label>
-            ))}
+          {categories
+            .filter((cat) => !menuCategoryIds.includes(cat.id))
+            .map((cat) => (
+              <label key={cat.id} htmlFor={`cat-${cat.id}`} className="flex items-center gap-2">
+                <input
+                  id={`cat-${cat.id}`}
+                  type="checkbox"
+                  checked={selectedCategoryIds.includes(cat.id)}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setSelectedCategoryIds((prev) => [...prev, cat.id]);
+                    } else {
+                      setSelectedCategoryIds((prev) => prev.filter((id) => id !== cat.id));
+                    }
+                  }}
+                />
+                <span>{cat.name}</span>
+              </label>
+          ))}
           </div>
 
           <div className="mt-6 flex justify-end gap-3">
@@ -306,7 +315,7 @@ const MenuEditorPanel = ({ selectedMenu, updateMenu, deleteMenu }) => {
               Cancel
             </button>
             <button
-              disabled={selectedCategoryIds.length === 0}
+              disabled={categories.length === 0 || menuCategoryIds.length === categories.length}
               className={`text-sm px-4 py-2 rounded ${
                 selectedCategoryIds.length === 0
                   ? 'bg-green-100 text-green-400 cursor-not-allowed'

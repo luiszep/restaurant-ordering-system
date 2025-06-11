@@ -17,7 +17,7 @@ import {
 const navItems = [
   { label: 'KDS', path: 'kds', icon: <LayoutDashboard size={20} /> },
   { label: 'Orders', path: 'orders', icon: <ShoppingBag size={20} /> },
-  { label: 'Menu Builder', path: 'menu', icon: <ListOrdered size={20} /> },
+  { label: 'Menu Builder', path: 'menus', icon: <ListOrdered size={20} /> },
   { label: 'Transactions', path: 'transactions', icon: <Receipt size={20} /> },
   { label: 'Reports', path: 'reports', icon: <BarChart size={20} /> },
   { label: 'Timer', path: 'timer', icon: <Clock size={20} /> },
@@ -30,7 +30,10 @@ const RestaurantDashboardLayout = () => {
   const { id } = useParams();
   const [copied, setCopied] = useState(false);
   const location = useLocation();
-  const isMenuPage = location.pathname.endsWith('/menu');
+  const builderTabPaths = ['/menus', '/categories', '/items', '/modifiers'];
+  const isBuilderTab = builderTabPaths.some((path) =>
+    location.pathname.endsWith(path)
+  );
 
   const restaurant = useMemo(() => {
     const stored = localStorage.getItem('adminRestaurants');
@@ -108,7 +111,7 @@ const RestaurantDashboardLayout = () => {
         {/* Main page content */}
         <div
           className={`flex-1 ${
-            isMenuPage ? 'bg-white text-black' : 'bg-[#0c0c0c] text-white'
+            isBuilderTab ? 'bg-white text-black' : 'bg-[#0c0c0c] text-white'
           }`}
         >
           <Outlet />

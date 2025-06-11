@@ -1,20 +1,24 @@
 import React from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 
-// Centralized config for tabs
 const TABS = [
-  { label: 'Menus', enabled: true },
-  { label: 'Categories', enabled: false },
-  { label: 'Items', enabled: false },
-  { label: 'Modifiers', enabled: false },
+  { label: 'Menus', path: 'menus', enabled: true },
+  { label: 'Categories', path: 'categories', enabled: true },
+  { label: 'Items', path: 'items', enabled: false },
+  { label: 'Modifiers', path: 'modifiers', enabled: false },
 ];
 
-const MenuBuilderTabs = ({ activeTab = 'Menus', onTabClick }) => {
+const MenuBuilderTabs = ({ activeTab = 'Menus' }) => {
+  const navigate = useNavigate();
+  const { id: restaurantId } = useParams();
+
   const handleClick = (tab) => {
-    if (tab.enabled) {
-      onTabClick?.(tab.label);
-    } else {
+    if (!tab.enabled) {
       alert(`${tab.label} view is in development (coming soon)`);
+      return;
     }
+
+    navigate(`/admin/restaurant/${restaurantId}/${tab.path}`);
   };
 
   return (

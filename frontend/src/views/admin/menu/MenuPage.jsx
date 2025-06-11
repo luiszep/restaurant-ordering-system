@@ -54,6 +54,13 @@ const defaultMenus = [
 
 const MenuPage = () => {
   const { id: restaurantId } = useParams();
+
+  const categoriesKey = `categories-restaurant-${restaurantId}`;
+
+  const [categories] = useState(() => {
+    const stored = localStorage.getItem(categoriesKey);
+    return stored ? JSON.parse(stored) : [];
+  });
   
   const menusKey = `menus-${restaurantId}`;
   const selectedMenuKey = `selectedMenuId-${restaurantId}`;
@@ -80,6 +87,11 @@ const MenuPage = () => {
   useEffect(() => {
     localStorage.setItem(selectedMenuKey, JSON.stringify(selectedMenuId));
   }, [selectedMenuId, selectedMenuKey]);
+
+  useEffect(() => {
+    localStorage.setItem(categoriesKey, JSON.stringify(categories));
+  }, [categories, categoriesKey]);
+
 
   const updateMenu = (id, updates) => {
     setMenus((prev) =>
@@ -118,6 +130,7 @@ const MenuPage = () => {
               selectedMenu={selectedMenu}
               updateMenu={updateMenu}
               deleteMenu={deleteMenu}
+              categories={categories}
             />
           ) : (
             <div className="flex flex-col items-center justify-center h-full text-gray-500 text-lg">

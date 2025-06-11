@@ -35,6 +35,7 @@ import SettingsPage from './views/admin/settings';
 import CustomerLandingPage from './views/customer/landing/CustomerLandingPage';
 import CustomerMenuPage from './views/customer/menu/CustomerMenuPage';
 import CustomerHostessPage from './views/customer/landing/CustomerHostessPage.jsx';
+import CategoryPage from './views/admin/menu/CategoryPage.jsx';
 
 export default function App() {
   return (
@@ -64,7 +65,8 @@ export default function App() {
           <Route index element={<KDSPage />} />
           <Route path="kds" element={<KDSPage />} />
           <Route path="orders" element={<OrdersPage />} />
-          <Route path="menu" element={<MenuPage />} />
+          <Route path="menus" element={<MenuPage />} />
+          <Route path="categories" element={<CategoryPage />} />
           <Route path="transactions" element={<TransactionsPage />} />
           <Route path="reports" element={<ReportsPage />} />
           <Route path="timer" element={<TimerPage />} />

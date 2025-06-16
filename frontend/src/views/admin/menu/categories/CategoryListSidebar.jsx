@@ -15,10 +15,10 @@ const CategoryListSidebar = ({
   const handleCreateCategory = () => {
     const newId = Date.now();
     const newCategory = {
-      id: newId,
+      id: Date.now(),
       name: 'New Category',
       description: '',
-      expandByDefault: false,
+      autoExpand: false,
       items: [],
     };
     setCategories((prev) => [...prev, newCategory]);

@@ -55,42 +55,47 @@ const MenuBuilderPage = () => {
   };
 
   return (
-    <div className="flex flex-col h-full w-full bg-white">
-      <MenuBuilderTabs />
+    <div className="flex flex-col h-screen w-full bg-white overflow-hidden">
+      {/* Fixed Tabs */}
+      <div className="shrink-0 z-10 bg-white">
+        <MenuBuilderTabs />
+      </div>
 
-      <div className="flex-1 overflow-hidden">
-      <Routes>
-        <Route
-          index
-          element={
-            <MenuPage
-              menus={menus}
-              setMenus={setMenus}
-              selectedMenuId={selectedMenuId}
-              setSelectedMenuId={setSelectedMenuId}
-              selectedMenu={selectedMenu}
-              updateMenu={updateMenu}
-              deleteMenu={deleteMenu}
-              categories={categories}
-            />
-          }
-        />
-        <Route
-          path="categories"
-          element={
-            <CategoryPage
-              categories={categories}
-              setCategories={setCategories}
-              selectedCategoryId={selectedCategoryId}
-              setSelectedCategoryId={setSelectedCategoryId}
-              selectedCategory={selectedCategory}
-              updateCategory={updateCategory}
-              deleteCategory={deleteCategory}
-            />
-          }
-        />
-      </Routes>
-
+      {/* Main Body with Sidebar and Editor */}
+      <div className="flex-1 overflow-y-auto">
+        <Routes>
+          <Route
+            index
+            element={
+              <MenuPage
+                menus={menus}
+                setMenus={setMenus}
+                selectedMenuId={selectedMenuId}
+                setSelectedMenuId={setSelectedMenuId}
+                selectedMenu={selectedMenu}
+                updateMenu={updateMenu}
+                deleteMenu={deleteMenu}
+                categories={categories}
+              />
+            }
+          />
+          <Route
+            path="categories"
+            element={
+              <CategoryPage
+                categories={categories}
+                setCategories={setCategories}
+                selectedCategoryId={selectedCategoryId}
+                setSelectedCategoryId={setSelectedCategoryId}
+                selectedCategory={selectedCategory}
+                updateCategory={updateCategory}
+                deleteCategory={deleteCategory}
+                menus={menus}
+                setMenus={setMenus}
+              />
+            }
+          />
+        </Routes>
       </div>
     </div>
   );

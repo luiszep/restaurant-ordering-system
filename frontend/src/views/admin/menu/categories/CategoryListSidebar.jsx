@@ -13,9 +13,9 @@ const CategoryListSidebar = ({
   const handleCategoryClick = (id) => setSelectedCategoryId(id);
 
   const handleCreateCategory = () => {
-    const newId = Date.now();
+    const newId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const newCategory = {
-      id: Date.now(),
+      id: newId,
       name: 'New Category',
       description: '',
       autoExpand: false,
@@ -33,15 +33,18 @@ const CategoryListSidebar = ({
   const isSearchActive = searchTerm.trim() !== '';
 
   return (
-    <div className="w-[260px] bg-white border-r border-gray-200 flex flex-col p-4">
-      {/* This fills the vertical space above the button */}
-      <div className="flex-1 flex flex-col">
+    <div className="w-[260px] h-full bg-white flex flex-col px-4 pt-4">
+      {/* Fixed search input (not scrollable) */}
+      <div className="shrink-0">
         <MenuSearchInput
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
           placeholder="Search categories..."
         />
-        
+      </div>
+
+      {/* Scrollable list area */}
+      <div className="flex-1 overflow-y-auto scrollbar-hide flex flex-col space-y-3 pb-20">
         <CategoryList
           categories={categories}
           filteredCategories={filteredCategories}
@@ -49,15 +52,16 @@ const CategoryListSidebar = ({
           handleCategoryClick={handleCategoryClick}
           isSearchActive={isSearchActive}
         />
-      </div>
 
-      {/* Button always pinned to bottom */}
-      <button
-        onClick={handleCreateCategory}
-        className="mt-4 py-2 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-md"
-      >
-        + Create Category
-      </button>
+        {!isSearchActive && (
+          <button
+            onClick={handleCreateCategory}
+            className="py-2 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-md"
+          >
+            + Create Category
+          </button>
+        )}
+      </div>
     </div>
   );
 };

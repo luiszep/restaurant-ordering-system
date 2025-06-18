@@ -2,13 +2,18 @@ import React, { useState, useMemo } from 'react';
 import MenuSearchInput from '../components/listSidebarComponents/MenuSearchInput';
 import MenuDraggableList from '../components/listSidebarComponents/MenuDraggableList';
 
-const MenuListSidebar = ({ menus, setMenus, selectedMenuId, setSelectedMenuId }) => {
+const MenuListSidebar = ({
+  menus,
+  setMenus,
+  selectedMenuId,
+  setSelectedMenuId,
+}) => {
   const [searchTerm, setSearchTerm] = useState('');
 
   const handleMenuClick = (id) => setSelectedMenuId(id);
 
   const handleCreateMenu = () => {
-    const newId = Date.now();
+    const newId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const newMenu = {
       id: newId,
       name: 'New Menu',
@@ -38,24 +43,36 @@ const MenuListSidebar = ({ menus, setMenus, selectedMenuId, setSelectedMenuId })
   const isSearchActive = searchTerm.trim() !== '';
 
   return (
-    <div className="w-[260px] bg-white border-r border-gray-200 flex flex-col p-4">
-      <MenuSearchInput searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+    <div className="w-[260px] h-full bg-white flex flex-col px-4 pt-4">
+      {/* Non-scrollable header (search input) */}
+      <div className="shrink-0">
+        <MenuSearchInput
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          placeholder="Search menus..."
+        />
+      </div>
 
-      <MenuDraggableList
-        menus={menus}
-        filteredMenus={filteredMenus}
-        selectedMenuId={selectedMenuId}
-        handleMenuClick={handleMenuClick}
-        handleDragEnd={handleDragEnd}
-        isSearchActive={isSearchActive}
-      />
+      {/* Scrollable content area */}
+      <div className="flex-1 overflow-y-auto scrollbar-hide flex flex-col space-y-3 pb-20">
+        <MenuDraggableList
+          menus={menus}
+          filteredMenus={filteredMenus}
+          selectedMenuId={selectedMenuId}
+          handleMenuClick={handleMenuClick}
+          handleDragEnd={handleDragEnd}
+          isSearchActive={isSearchActive}
+        />
 
-      <button
-        onClick={handleCreateMenu}
-        className="mt-4 py-2 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-md"
-      >
-        + Create Menu
-      </button>
+        {!isSearchActive && (
+          <button
+            onClick={handleCreateMenu}
+            className="py-2 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-md"
+          >
+            + Create Menu
+          </button>
+        )}
+      </div>
     </div>
   );
 };

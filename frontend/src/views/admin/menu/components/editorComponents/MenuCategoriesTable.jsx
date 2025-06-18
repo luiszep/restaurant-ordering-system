@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 
 const MenuCategoriesTable = ({
@@ -9,6 +10,14 @@ const MenuCategoriesTable = ({
   handleDeleteCategory,
   onAddCategoryClick,
 }) => {
+  const navigate = useNavigate();
+  const { id: restaurantId } = useParams();
+
+  const handleCategoryClick = (categoryId) => {
+    localStorage.setItem('jumpToCategoryId', categoryId);
+    navigate(`/admin/restaurant/${restaurantId}/menus/categories`);
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm pt-3 px-6 pb-6 mb-6">
       <div className="flex justify-between items-center mb-2">
@@ -61,7 +70,10 @@ const MenuCategoriesTable = ({
                             <span {...provided.dragHandleProps} className="cursor-move text-lg">≡</span>
                             <span className="text-gray-500">#{index + 1}</span>
                           </div>
-                          <div className="text-blue-600">
+                          <div
+                            className="text-blue-600 hover:underline cursor-pointer"
+                            onClick={() => handleCategoryClick(cat.id)}
+                          >
                             {typeof cat.name === 'string' ? cat.name : 'Unnamed'}
                           </div>
                           <div>{itemCount} {itemCount === 1 ? 'item' : 'items'}</div>

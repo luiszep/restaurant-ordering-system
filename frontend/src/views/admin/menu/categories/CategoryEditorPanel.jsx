@@ -1,67 +1,111 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 import EditableTitle from '../components/editorComponents/EditableTitle';
 import DeleteButton from '../components/editorComponents/DeleteButton';
 import CategorySettingsPanel from '../components/editorComponents/CategorySettingsPanel';
 import CategoryItemsTable from '../components/editorComponents/CategoryItemsTable';
+import CategoryMenuAssignmentPanel from '../components/editorComponents/CategoryMenuAssignmentPanel';
 
-const CategoryEditorPanel = ({ selectedCategory, updateCategory, deleteCategory }) => {
+const CategoryEditorPanel = ({
+  selectedCategory,
+  updateCategory,
+  deleteCategory,
+  menus,
+  setMenus,
+}) => {
   const [isEditingName, setIsEditingName] = useState(false);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [autoExpand, setAutoExpand] = useState(false);
   const [items, setItems] = useState([]);
 
-  useEffect(() => {
-    if (!selectedCategory) return;
+  const didInit = useRef(false);
+  const prevItemsRef = useRef([]);
+  const updateTimeout = useRef(null);
 
-    setName(selectedCategory.name || '');
-    setDescription(selectedCategory.description || '');
-    setAutoExpand(selectedCategory.autoExpand || false);
-    setItems(selectedCategory.items || []);
+  useEffect(() => {
+    if (selectedCategory) {
+      const newItems = selectedCategory.items || [];
+      const newName = selectedCategory.name || '';
+      const newDesc = selectedCategory.description || '';
+      const newExpand = selectedCategory.autoExpand || false;
+
+      if (JSON.stringify(newItems) !== JSON.stringify(prevItemsRef.current)) {
+        setItems(newItems);
+        prevItemsRef.current = newItems;
+      }
+
+      setName(newName);
+      setDescription(newDesc);
+      setAutoExpand(newExpand);
+      didInit.current = true;
+    }
   }, [selectedCategory]);
 
+  useEffect(() => {
+    if (
+      didInit.current &&
+      selectedCategory &&
+      JSON.stringify(items) !== JSON.stringify(prevItemsRef.current)
+    ) {
+      clearTimeout(updateTimeout.current);
+      updateTimeout.current = setTimeout(() => {
+        updateCategory?.(selectedCategory.id, { items });
+        prevItemsRef.current = items;
+      }, 100);
+    }
+
+    return () => clearTimeout(updateTimeout.current);
+  }, [items, selectedCategory, updateCategory]);
+
   return (
-    <div className="w-full max-w-5xl mx-auto">
-      {/* Editable Category Title */}
-      <EditableTitle
-        isEditing={isEditingName}
-        setIsEditing={setIsEditingName}
-        title={name}
-        setTitle={setName}
-        onSave={(newName) => updateCategory?.(selectedCategory.id, { name: newName })}
-      />
+    <div className="flex flex-col h-full">
+      {/* Scrollable content area including the delete button */}
+      <div className="flex-1 overflow-y-auto space-y-6 scrollbar-hide px-4 pt-4 pb-20">
+        <div className="w-full max-w-5xl mx-auto">
+          <EditableTitle
+            isEditing={isEditingName}
+            setIsEditing={setIsEditingName}
+            title={name}
+            setTitle={setName}
+            onSave={(newName) =>
+              updateCategory?.(selectedCategory.id, { name: newName })
+            }
+          />
 
-      {/* Category Settings: Description + Expand Toggle */}
-      <CategorySettingsPanel
-        autoExpand={autoExpand}
-        setAutoExpand={setAutoExpand}
-        description={description}
-        setDescription={setDescription}
-        onUpdate={(changes) => updateCategory?.(selectedCategory.id, changes)}
-      />
+          <CategorySettingsPanel
+            autoExpand={autoExpand}
+            setAutoExpand={setAutoExpand}
+            description={description}
+            setDescription={setDescription}
+            onUpdate={(changes) =>
+              updateCategory?.(selectedCategory.id, changes)
+            }
+          />
 
-      {/* Menus Using This Category */}
-      <div className="bg-white rounded-lg shadow-sm pt-3 px-6 pb-6 mb-6">
-        <h2 className="text-lg font-semibold mb-2">Menus with “{name}” Category</h2>
-        {/* Placeholder content for future dynamic integration */}
-        <p className="text-sm text-gray-600">This category appears in: All Day Menu</p>
+          <CategoryMenuAssignmentPanel
+            menus={menus}
+            setMenus={setMenus}
+            categoryId={selectedCategory.id}
+            categoryName={name}
+          />
+
+          <CategoryItemsTable
+            categoryName={name}
+            items={items}
+            setItems={setItems}
+          />
+
+          {/* Make sure button is INSIDE the scrollable area but spaced from the bottom */}
+          <div className="mt-8">
+            <DeleteButton
+              label="Delete Category 🗑️"
+              confirmMessage={`Are you sure you want to delete the "${name}" category? This cannot be undone.`}
+              onConfirm={() => deleteCategory?.(selectedCategory.id)}
+            />
+          </div>
+        </div>
       </div>
-
-      {/* Items in This Category */}
-      <CategoryItemsTable
-        categoryName={name}
-        items={items}
-        setItems={setItems}
-        onUpdateItems={(updated) => updateCategory?.(selectedCategory.id, { items: updated })}
-      />
-
-      {/* Delete Category Button */}
-      <DeleteButton
-        label="Delete Category 🗑️"
-        confirmMessage={`Are you sure you want to delete the "${name}" category? This cannot be undone.`}
-        onConfirm={() => deleteCategory?.(selectedCategory.id)}
-      />
     </div>
   );
 };

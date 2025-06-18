@@ -7,7 +7,6 @@ import AddCategoryModal from '../components/editorComponents/AddCategoryModal';
 import DeleteButton from '../components/editorComponents/DeleteButton';
 
 const MenuEditorPanel = ({ selectedMenu, updateMenu, deleteMenu, categories }) => {
-  // -------------------- State --------------------
   const [isEditingName, setIsEditingName] = useState(false);
   const [menuName, setMenuName] = useState('');
   const [selectedDays, setSelectedDays] = useState([]);
@@ -19,7 +18,6 @@ const MenuEditorPanel = ({ selectedMenu, updateMenu, deleteMenu, categories }) =
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [selectedCategoryIds, setSelectedCategoryIds] = useState([]);
 
-  // -------------------- Effects --------------------
   useEffect(() => {
     if (!selectedMenu) return;
 
@@ -35,7 +33,6 @@ const MenuEditorPanel = ({ selectedMenu, updateMenu, deleteMenu, categories }) =
     setMenuCategoryIds(validIds);
   }, [selectedMenu, categories]);
 
-  // -------------------- Handlers --------------------
   const toggleDay = (day) => {
     const updated = selectedDays.includes(day)
       ? selectedDays.filter(d => d !== day)
@@ -92,56 +89,61 @@ const MenuEditorPanel = ({ selectedMenu, updateMenu, deleteMenu, categories }) =
     setSelectedCategoryIds([]);
   };
 
-  // -------------------- Render --------------------
   return (
-    <div className="w-full max-w-5xl mx-auto">
-      <EditableTitle
-        isEditing={isEditingName}
-        setIsEditing={setIsEditingName}
-        title={menuName}
-        setTitle={setMenuName}
-        onSave={(newName) => updateMenu(selectedMenu.id, { name: newName })}
-      />
+    <div className="flex flex-col h-full">
+      <div className="flex-1 overflow-y-auto space-y-6 scrollbar-hide px-4 pt-4 pb-20">
+        <div className="w-full max-w-5xl mx-auto">
+          <EditableTitle
+            isEditing={isEditingName}
+            setIsEditing={setIsEditingName}
+            title={menuName}
+            setTitle={setMenuName}
+            onSave={(newName) => updateMenu(selectedMenu.id, { name: newName })}
+          />
 
-      <MenuSettingsPanel
-        selectedDays={selectedDays}
-        toggleDay={toggleDay}
-        startTime={startTime}
-        endTime={endTime}
-        handleStartTimeChange={handleStartTimeChange}
-        handleEndTimeChange={handleEndTimeChange}
-        timeError={timeError}
-        description={description}
-        setDescription={setDescription}
-        selectedMenu={selectedMenu}
-        updateMenu={updateMenu}
-      />
+          <MenuSettingsPanel
+            selectedDays={selectedDays}
+            toggleDay={toggleDay}
+            startTime={startTime}
+            endTime={endTime}
+            handleStartTimeChange={handleStartTimeChange}
+            handleEndTimeChange={handleEndTimeChange}
+            timeError={timeError}
+            description={description}
+            setDescription={setDescription}
+            selectedMenu={selectedMenu}
+            updateMenu={updateMenu}
+          />
 
-      <MenuCategoriesTable
-        menuName={menuName}
-        menuCategoryIds={menuCategoryIds}
-        categories={categories}
-        handleDragEnd={handleDragEnd}
-        handleDeleteCategory={handleDeleteCategory}
-        onAddCategoryClick={() => setShowCategoryModal(true)}
-      />
+          <MenuCategoriesTable
+            menuName={menuName}
+            menuCategoryIds={menuCategoryIds}
+            categories={categories}
+            handleDragEnd={handleDragEnd}
+            handleDeleteCategory={handleDeleteCategory}
+            onAddCategoryClick={() => setShowCategoryModal(true)}
+          />
 
-      {showCategoryModal && (
-        <AddCategoryModal
-          categories={categories}
-          menuCategoryIds={menuCategoryIds}
-          selectedCategoryIds={selectedCategoryIds}
-          setSelectedCategoryIds={setSelectedCategoryIds}
-          setShowCategoryModal={setShowCategoryModal}
-          handleAddSelectedCategories={handleAddSelectedCategories}
-        />
-      )}
+          {showCategoryModal && (
+            <AddCategoryModal
+              categories={categories}
+              menuCategoryIds={menuCategoryIds}
+              selectedCategoryIds={selectedCategoryIds}
+              setSelectedCategoryIds={setSelectedCategoryIds}
+              setShowCategoryModal={setShowCategoryModal}
+              handleAddSelectedCategories={handleAddSelectedCategories}
+            />
+          )}
 
-      <DeleteButton
-        label="Delete Menu 🗑️"
-        confirmMessage={`Are you sure you want to delete the "${selectedMenu.name}" menu? This cannot be undone.`}
-        onConfirm={() => deleteMenu(selectedMenu.id)}
-      />
+          <div className="mt-8">
+            <DeleteButton
+              label="Delete Menu 🗑️"
+              confirmMessage={`Are you sure you want to delete the "${selectedMenu.name}" menu? This cannot be undone.`}
+              onConfirm={() => deleteMenu(selectedMenu.id)}
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

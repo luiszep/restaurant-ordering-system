@@ -1,6 +1,12 @@
 import React from 'react';
 
-const DeleteButton = ({ label, confirmMessage, onConfirm, className = '' }) => {
+const DeleteButton = ({
+  className = '',
+  confirmMessage,
+  label,
+  onConfirm,
+}) => {
+  // Show browser confirmation dialog before proceeding
   const handleClick = () => {
     if (window.confirm(confirmMessage)) {
       onConfirm?.();

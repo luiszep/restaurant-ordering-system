@@ -1,19 +1,19 @@
-import React, { useMemo, useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import CategoryListSidebar from './categories/CategoryListSidebar';
 import CategoryEditorPanel from './categories/CategoryEditorPanel';
 
 const CategoryPage = ({
   categories = [],
-  setCategories,
-  selectedCategoryId,
-  setSelectedCategoryId,
-  selectedCategory,
-  updateCategory,
   deleteCategory,
   menus,
+  selectedCategory,
+  selectedCategoryId,
+  setCategories,
   setMenus,
+  setSelectedCategoryId,
+  updateCategory,
 }) => {
-  // Handle category jump on tab switch (e.g. from MENUS tab link)
+  // 🧭 Handle deep-linking via jumpToCategoryId (set by MENUS tab)
   useEffect(() => {
     const jumpToId = localStorage.getItem('jumpToCategoryId');
 
@@ -24,21 +24,23 @@ const CategoryPage = ({
       setSelectedCategoryId(jumpToId);
       localStorage.removeItem('jumpToCategoryId');
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [categories.length]); // ✅ Only track length; avoids unstable reference
 
-  // Select current category or fall back to first
+    // Only re-run when the number of categories changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categories.length]);
+
+  // 🧠 Get the currently selected category (either from ID or prop)
   const currentCategory = useMemo(() => {
     return (
       selectedCategory ||
       categories.find((cat) => cat.id === selectedCategoryId) ||
       null
     );
-  }, [categories, selectedCategoryId, selectedCategory]);
+  }, [categories, selectedCategory, selectedCategoryId]);
 
   return (
     <div className="flex flex-1 h-full w-full overflow-hidden">
-      {/* Sidebar with List of Categories */}
+      {/* Sidebar — Category list */}
       <div className="w-64 shrink-0 bg-white">
         <CategoryListSidebar
           categories={categories}
@@ -48,7 +50,7 @@ const CategoryPage = ({
         />
       </div>
 
-      {/* Main Editor Panel */}
+      {/* Editor Panel — Only shown if a category is selected */}
       <div className="flex-1 bg-gray-50 p-4 overflow-y-auto scrollbar-hide">
         {currentCategory ? (
           <CategoryEditorPanel

@@ -2,41 +2,52 @@ import React from 'react';
 
 const AddCategoryModal = ({
   categories,
+  handleAddSelectedCategories,
   menuCategoryIds,
   selectedCategoryIds,
   setSelectedCategoryIds,
   setShowCategoryModal,
-  handleAddSelectedCategories,
 }) => {
+  const isDisabled = selectedCategoryIds.length === 0;
+
+  // Handle checkbox toggle
+  const handleToggle = (id, checked) => {
+    setSelectedCategoryIds((prev) =>
+      checked ? [...prev, id] : prev.filter((existingId) => existingId !== id)
+    );
+  };
+
+  // Filter categories not yet in the menu
+  const availableCategories = categories.filter(
+    (cat) => !menuCategoryIds.includes(cat.id)
+  );
+
   return (
     <div className="fixed inset-0 bg-white/70 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
+        {/* Title */}
         <h3 className="text-lg font-semibold mb-4">Select Categories to Add</h3>
 
+        {/* Category List */}
         <div className="space-y-2 max-h-60 overflow-y-auto">
-          {categories
-            .filter((cat) => !menuCategoryIds.includes(cat.id))
-            .map((cat) => (
-              <label key={cat.id} htmlFor={`cat-${cat.id}`} className="flex items-center gap-2">
-                <input
-                  id={`cat-${cat.id}`}
-                  type="checkbox"
-                  checked={selectedCategoryIds.includes(cat.id)}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      setSelectedCategoryIds((prev) => [...prev, cat.id]);
-                    } else {
-                      setSelectedCategoryIds((prev) =>
-                        prev.filter((id) => id !== cat.id)
-                      );
-                    }
-                  }}
-                />
-                <span>{cat.name}</span>
-              </label>
-            ))}
+          {availableCategories.map((cat) => (
+            <label
+              key={cat.id}
+              htmlFor={`cat-${cat.id}`}
+              className="flex items-center gap-2"
+            >
+              <input
+                id={`cat-${cat.id}`}
+                type="checkbox"
+                checked={selectedCategoryIds.includes(cat.id)}
+                onChange={(e) => handleToggle(cat.id, e.target.checked)}
+              />
+              <span>{cat.name}</span>
+            </label>
+          ))}
         </div>
 
+        {/* Buttons */}
         <div className="mt-6 flex justify-end gap-3">
           <button
             onClick={() => {
@@ -48,10 +59,10 @@ const AddCategoryModal = ({
             Cancel
           </button>
           <button
-            disabled={selectedCategoryIds.length === 0}
+            disabled={isDisabled}
             onClick={handleAddSelectedCategories}
             className={`text-sm px-4 py-2 rounded ${
-              selectedCategoryIds.length === 0
+              isDisabled
                 ? 'bg-green-100 text-green-400 cursor-not-allowed'
                 : 'bg-green-500 text-white hover:bg-green-600'
             }`}

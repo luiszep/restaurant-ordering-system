@@ -1,46 +1,53 @@
 import React from 'react';
 
+// Constants
+const MAX_DESCRIPTION_LENGTH = 500;
+const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
 const timeOptions = Array.from({ length: 96 }, (_, i) => {
   const hours = String(Math.floor(i / 4)).padStart(2, '0');
   const minutes = String((i % 4) * 15).padStart(2, '0');
   return `${hours}:${minutes}:00`;
 });
 
-const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
 const MenuSettingsPanel = ({
-  selectedDays,
-  toggleDay,
-  startTime,
-  endTime,
-  handleStartTimeChange,
-  handleEndTimeChange,
-  timeError,
   description,
-  setDescription,
+  endTime,
+  handleEndTimeChange,
+  handleStartTimeChange,
+  selectedDays,
   selectedMenu,
-  updateMenu
+  setDescription,
+  startTime,
+  timeError,
+  toggleDay,
+  updateMenu,
 }) => {
   return (
     <div className="bg-white rounded-lg shadow-sm pt-3 px-6 pb-6 mb-6">
       <h2 className="text-lg font-semibold mb-2">Menu Settings</h2>
 
+      {/* Day Selector */}
       <div className="flex gap-2 mb-3">
-        {WEEKDAYS.map((day) => (
-          <button
-            key={day}
-            onClick={() => toggleDay(day)}
-            className={`font-medium px-3 py-1 rounded transition ${
-              selectedDays.includes(day)
-                ? 'bg-pink-500 text-white hover:bg-pink-600'
-                : 'bg-pink-100 text-pink-600 hover:bg-pink-200'
-            }`}
-          >
-            {day}
-          </button>
-        ))}
+        {WEEKDAYS.map((day) => {
+          const isSelected = selectedDays.includes(day);
+          return (
+            <button
+              key={day}
+              onClick={() => toggleDay(day)}
+              className={`font-medium px-3 py-1 rounded transition ${
+                isSelected
+                  ? 'bg-pink-500 text-white hover:bg-pink-600'
+                  : 'bg-pink-100 text-pink-600 hover:bg-pink-200'
+              }`}
+            >
+              {day}
+            </button>
+          );
+        })}
       </div>
 
+      {/* Time Selectors */}
       <div className="flex gap-4 mb-3">
         {/* Start Time */}
         <div>
@@ -51,7 +58,9 @@ const MenuSettingsPanel = ({
             className={`border ${timeError ? 'border-red-500' : 'border-gray-300'} rounded px-2 py-1 text-sm`}
           >
             {timeOptions.map((time) => (
-              <option key={time} value={time}>{time}</option>
+              <option key={time} value={time}>
+                {time}
+              </option>
             ))}
           </select>
         </div>
@@ -67,10 +76,13 @@ const MenuSettingsPanel = ({
             >
               <option value="N/A">N/A</option>
               {timeOptions.map((time) => (
-                <option key={time} value={time}>{time}</option>
+                <option key={time} value={time}>
+                  {time}
+                </option>
               ))}
             </select>
           </div>
+
           {timeError && (
             <span className="text-red-600 text-sm whitespace-nowrap">{timeError}</span>
           )}
@@ -81,18 +93,24 @@ const MenuSettingsPanel = ({
       <label className="block text-sm text-gray-700 mb-1">Description</label>
       <textarea
         value={description}
+        placeholder="Optional description..."
         onChange={(e) => {
           const val = e.target.value;
-          if (val.length <= 500) {
+          if (val.length <= MAX_DESCRIPTION_LENGTH) {
             setDescription(val);
             updateMenu?.(selectedMenu.id, { description: val });
           }
         }}
-        placeholder="Optional description..."
         className="w-full border border-gray-300 rounded-md px-4 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-pink-400"
       />
-      <div className={`text-right text-xs mt-1 ${description.length > 450 ? 'text-red-500' : 'text-gray-500'}`}>
-        {description.length} / 500
+      <div
+        className={`text-right text-xs mt-1 ${
+          description.length > MAX_DESCRIPTION_LENGTH - 50
+            ? 'text-red-500'
+            : 'text-gray-500'
+        }`}
+      >
+        {description.length} / {MAX_DESCRIPTION_LENGTH}
       </div>
     </div>
   );

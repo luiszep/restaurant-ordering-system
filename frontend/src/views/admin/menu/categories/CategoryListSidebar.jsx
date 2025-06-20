@@ -4,13 +4,22 @@ import CategoryList from '../components/listSidebarComponents/CategoryList';
 
 const CategoryListSidebar = ({
   categories,
-  setCategories,
   selectedCategoryId,
+  setCategories,
   setSelectedCategoryId,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
 
-  const handleCategoryClick = (id) => setSelectedCategoryId(id);
+  const isSearchActive = searchTerm.trim() !== '';
+
+  const filteredCategories = useMemo(() => {
+    const term = searchTerm.toLowerCase();
+    return categories.filter((c) => c.name.toLowerCase().includes(term));
+  }, [categories, searchTerm]);
+
+  const handleCategoryClick = (id) => {
+    setSelectedCategoryId(id);
+  };
 
   const handleCreateCategory = () => {
     const newId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -25,16 +34,9 @@ const CategoryListSidebar = ({
     setSelectedCategoryId(newId);
   };
 
-  const filteredCategories = useMemo(() => {
-    const term = searchTerm.toLowerCase();
-    return categories.filter((c) => c.name.toLowerCase().includes(term));
-  }, [categories, searchTerm]);
-
-  const isSearchActive = searchTerm.trim() !== '';
-
   return (
     <div className="w-[260px] h-full bg-white flex flex-col px-4 pt-4">
-      {/* Fixed search input (not scrollable) */}
+      {/* 🔍 Fixed search input (top section) */}
       <div className="shrink-0">
         <MenuSearchInput
           searchTerm={searchTerm}
@@ -43,7 +45,7 @@ const CategoryListSidebar = ({
         />
       </div>
 
-      {/* Scrollable list area */}
+      {/* 📜 Scrollable list area */}
       <div className="flex-1 overflow-y-auto scrollbar-hide flex flex-col space-y-3 pb-20">
         <CategoryList
           categories={categories}

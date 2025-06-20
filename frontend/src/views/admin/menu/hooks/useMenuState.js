@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getMenusKey, getSelectedMenuKey } from './localStorageHelpers';
 
+// Sample default menus (used on first load if none are stored)
 const defaultMenus = [
   {
     id: 1,
@@ -53,36 +54,43 @@ export const useMenuState = (restaurantId) => {
   const menusKey = getMenusKey(restaurantId);
   const selectedMenuKey = getSelectedMenuKey(restaurantId);
 
+  // Initialize menus (lazy-load from localStorage or fallback to defaults)
   const [menus, setMenus] = useState(() => {
     const stored = localStorage.getItem(menusKey);
     return stored ? JSON.parse(stored) : [...defaultMenus];
   });
 
+  // Initialize selected menu ID
   const [selectedMenuId, setSelectedMenuId] = useState(() => {
     const stored = localStorage.getItem(selectedMenuKey);
     return stored ? JSON.parse(stored) : menus[0]?.id || null;
   });
 
-  const selectedMenu = menus.find((m) => m.id === selectedMenuId) || null;
+  // Compute selected menu object
+  const selectedMenu = menus.find((menu) => menu.id === selectedMenuId) || null;
 
+  // Persist menus on change
   useEffect(() => {
     localStorage.setItem(menusKey, JSON.stringify(menus));
   }, [menus, menusKey]);
 
+  // Persist selected menu ID on change
   useEffect(() => {
     localStorage.setItem(selectedMenuKey, JSON.stringify(selectedMenuId));
   }, [selectedMenuId, selectedMenuKey]);
 
+  // Update a menu by ID
   const updateMenu = (id, updates) => {
     setMenus((prev) =>
-      prev.map((m) => (m.id === id ? { ...m, ...updates } : m))
+      prev.map((menu) => (menu.id === id ? { ...menu, ...updates } : menu))
     );
   };
 
-  const deleteMenu = (id) => {
+  // Delete a menu by ID
+  const deleteMenu = (idToDelete) => {
     setMenus((prev) => {
-      const updated = prev.filter((m) => m.id !== id);
-      if (id === selectedMenuId) {
+      const updated = prev.filter((menu) => menu.id !== idToDelete);
+      if (idToDelete === selectedMenuId) {
         setSelectedMenuId(updated[0]?.id || null);
       }
       return updated;
@@ -90,12 +98,12 @@ export const useMenuState = (restaurantId) => {
   };
 
   return {
-    menus,
-    setMenus,
-    selectedMenuId,
-    setSelectedMenuId,
-    selectedMenu,
-    updateMenu,
     deleteMenu,
+    menus,
+    selectedMenu,
+    selectedMenuId,
+    setMenus,
+    setSelectedMenuId,
+    updateMenu,
   };
 };

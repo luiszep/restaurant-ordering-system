@@ -1,35 +1,39 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-import EditableTitle from '../components/editorComponents/EditableTitle';
-import DeleteButton from '../components/editorComponents/DeleteButton';
-import CategorySettingsPanel from '../components/editorComponents/CategorySettingsPanel';
 import CategoryItemsTable from '../components/editorComponents/CategoryItemsTable';
 import CategoryMenuAssignmentPanel from '../components/editorComponents/CategoryMenuAssignmentPanel';
+import CategorySettingsPanel from '../components/editorComponents/CategorySettingsPanel';
+import DeleteButton from '../components/editorComponents/DeleteButton';
+import EditableTitle from '../components/editorComponents/EditableTitle';
 
 const CategoryEditorPanel = ({
-  selectedCategory,
-  updateCategory,
   deleteCategory,
   menus,
+  selectedCategory,
   setMenus,
+  updateCategory,
 }) => {
+  // Local state
   const [isEditingName, setIsEditingName] = useState(false);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [autoExpand, setAutoExpand] = useState(false);
   const [items, setItems] = useState([]);
 
+  // Refs to control sync behavior
   const didInit = useRef(false);
   const prevItemsRef = useRef([]);
   const updateTimeout = useRef(null);
 
+  // Initialize local state when selectedCategory changes
   useEffect(() => {
     if (selectedCategory) {
       const newItems = selectedCategory.items || [];
       const newName = selectedCategory.name || '';
       const newDesc = selectedCategory.description || '';
-      const newExpand = selectedCategory.autoExpand || false;
+      const newAutoExpand = selectedCategory.autoExpand || false;
 
+      // Only update items if changed
       if (JSON.stringify(newItems) !== JSON.stringify(prevItemsRef.current)) {
         setItems(newItems);
         prevItemsRef.current = newItems;
@@ -37,11 +41,12 @@ const CategoryEditorPanel = ({
 
       setName(newName);
       setDescription(newDesc);
-      setAutoExpand(newExpand);
+      setAutoExpand(newAutoExpand);
       didInit.current = true;
     }
   }, [selectedCategory]);
 
+  // Debounce sync of items to parent
   useEffect(() => {
     if (
       didInit.current &&
@@ -60,9 +65,9 @@ const CategoryEditorPanel = ({
 
   return (
     <div className="flex flex-col h-full">
-      {/* Scrollable content area including the delete button */}
       <div className="flex-1 overflow-y-auto space-y-6 scrollbar-hide px-4 pt-4 pb-20">
         <div className="w-full max-w-5xl mx-auto">
+          {/* Title Editor */}
           <EditableTitle
             isEditing={isEditingName}
             setIsEditing={setIsEditingName}
@@ -73,6 +78,7 @@ const CategoryEditorPanel = ({
             }
           />
 
+          {/* Settings Panel */}
           <CategorySettingsPanel
             autoExpand={autoExpand}
             setAutoExpand={setAutoExpand}
@@ -83,6 +89,7 @@ const CategoryEditorPanel = ({
             }
           />
 
+          {/* Menu Assignment Panel */}
           <CategoryMenuAssignmentPanel
             menus={menus}
             setMenus={setMenus}
@@ -90,13 +97,14 @@ const CategoryEditorPanel = ({
             categoryName={name}
           />
 
+          {/* Items Table */}
           <CategoryItemsTable
             categoryName={name}
             items={items}
             setItems={setItems}
           />
 
-          {/* Make sure button is INSIDE the scrollable area but spaced from the bottom */}
+          {/* Delete Button */}
           <div className="mt-8">
             <DeleteButton
               label="Delete Category 🗑️"

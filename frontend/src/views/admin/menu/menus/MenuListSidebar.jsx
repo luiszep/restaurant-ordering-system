@@ -4,15 +4,18 @@ import MenuDraggableList from '../components/listSidebarComponents/MenuDraggable
 
 const MenuListSidebar = ({
   menus,
-  setMenus,
   selectedMenuId,
+  setMenus,
   setSelectedMenuId,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const isSearchActive = searchTerm.trim() !== '';
 
-  const handleMenuClick = (id) => setSelectedMenuId(id);
+  const handleMenuClick = (id) => {
+    setSelectedMenuId(id);
+  };
 
-  const handleCreateMenu = () => {
+  const createNewMenu = () => {
     const newId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const newMenu = {
       id: newId,
@@ -29,6 +32,7 @@ const MenuListSidebar = ({
 
   const handleDragEnd = (result) => {
     if (!result.destination) return;
+
     const reordered = [...menus];
     const [moved] = reordered.splice(result.source.index, 1);
     reordered.splice(result.destination.index, 0, moved);
@@ -40,20 +44,18 @@ const MenuListSidebar = ({
     return menus.filter((m) => m.name.toLowerCase().includes(term));
   }, [menus, searchTerm]);
 
-  const isSearchActive = searchTerm.trim() !== '';
-
   return (
     <div className="w-[260px] h-full bg-white flex flex-col px-4 pt-4">
-      {/* Non-scrollable header (search input) */}
+      {/* Fixed search input at the top */}
       <div className="shrink-0">
         <MenuSearchInput
+          placeholder="Search menus..."
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
-          placeholder="Search menus..."
         />
       </div>
 
-      {/* Scrollable content area */}
+      {/* Scrollable menu list */}
       <div className="flex-1 overflow-y-auto scrollbar-hide flex flex-col space-y-3 pb-20">
         <MenuDraggableList
           menus={menus}
@@ -64,9 +66,10 @@ const MenuListSidebar = ({
           isSearchActive={isSearchActive}
         />
 
+        {/* Create Menu Button (only if not searching) */}
         {!isSearchActive && (
           <button
-            onClick={handleCreateMenu}
+            onClick={createNewMenu}
             className="py-2 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-md"
           >
             + Create Menu

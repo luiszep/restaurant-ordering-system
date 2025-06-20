@@ -3,14 +3,14 @@ import MenuListSidebar from './menus/MenuListSidebar';
 import MenuEditorPanel from './menus/MenuEditorPanel';
 
 const MenuPage = ({
-  menus = [],
+  menus,
   setMenus,
   selectedMenuId,
   setSelectedMenuId,
   selectedMenu,
   updateMenu,
   deleteMenu,
-  categories = [],
+  categories,
 }) => {
   const currentMenu = useMemo(() => {
     return selectedMenu || menus.find((menu) => menu.id === selectedMenuId) || null;
@@ -18,6 +18,7 @@ const MenuPage = ({
 
   return (
     <div className="flex flex-1 h-full w-full overflow-hidden">
+      {/* Left Sidebar */}
       <div className="w-64 shrink-0 bg-white">
         <MenuListSidebar
           menus={menus}
@@ -27,6 +28,7 @@ const MenuPage = ({
         />
       </div>
 
+      {/* Main Editor Panel */}
       <div className="flex-1 bg-gray-50 p-4 overflow-y-auto scrollbar-hide">
         {currentMenu ? (
           <MenuEditorPanel

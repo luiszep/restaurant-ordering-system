@@ -7,17 +7,25 @@ import AddCategoryModal from '../components/editorComponents/AddCategoryModal';
 import DeleteButton from '../components/editorComponents/DeleteButton';
 
 const MenuEditorPanel = ({ selectedMenu, updateMenu, deleteMenu, categories }) => {
-  const [isEditingName, setIsEditingName] = useState(false);
+  const menuId = selectedMenu.id;
+
+  // Name and schedule
   const [menuName, setMenuName] = useState('');
+  const [isEditingName, setIsEditingName] = useState(false);
   const [selectedDays, setSelectedDays] = useState([]);
   const [startTime, setStartTime] = useState('00:00:00');
   const [endTime, setEndTime] = useState('N/A');
   const [timeError, setTimeError] = useState('');
+
+  // Description
   const [description, setDescription] = useState('');
+
+  // Category handling
   const [menuCategoryIds, setMenuCategoryIds] = useState([]);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [selectedCategoryIds, setSelectedCategoryIds] = useState([]);
 
+  // Sync selected menu into local state
   useEffect(() => {
     if (!selectedMenu) return;
 
@@ -27,23 +35,25 @@ const MenuEditorPanel = ({ selectedMenu, updateMenu, deleteMenu, categories }) =
     setEndTime(selectedMenu.endTime || 'N/A');
     setDescription(selectedMenu.description || '');
 
-    const validIds = (selectedMenu.categories || []).filter(id =>
-      categories.some(c => c.id === id)
+    const validIds = (selectedMenu.categories || []).filter((id) =>
+      categories.some((c) => c.id === id)
     );
     setMenuCategoryIds(validIds);
   }, [selectedMenu, categories]);
 
+  // Day toggling
   const toggleDay = (day) => {
     const updated = selectedDays.includes(day)
-      ? selectedDays.filter(d => d !== day)
+      ? selectedDays.filter((d) => d !== day)
       : [...selectedDays, day];
     setSelectedDays(updated);
-    updateMenu(selectedMenu.id, { selectedDays: updated });
+    updateMenu(menuId, { selectedDays: updated });
   };
 
+  // Time handling
   const handleStartTimeChange = (value) => {
     setStartTime(value);
-    updateMenu(selectedMenu.id, { startTime: value });
+    updateMenu(menuId, { startTime: value });
 
     if (endTime !== 'N/A' && value >= endTime) {
       setTimeError('End time must be later than start time.');
@@ -54,7 +64,7 @@ const MenuEditorPanel = ({ selectedMenu, updateMenu, deleteMenu, categories }) =
 
   const handleEndTimeChange = (value) => {
     setEndTime(value);
-    updateMenu(selectedMenu.id, { endTime: value });
+    updateMenu(menuId, { endTime: value });
 
     if (value !== 'N/A' && startTime >= value) {
       setTimeError('End time must be later than start time.');
@@ -63,6 +73,7 @@ const MenuEditorPanel = ({ selectedMenu, updateMenu, deleteMenu, categories }) =
     }
   };
 
+  // Drag & drop categories
   const handleDragEnd = (result) => {
     if (!result.destination) return;
 
@@ -71,19 +82,19 @@ const MenuEditorPanel = ({ selectedMenu, updateMenu, deleteMenu, categories }) =
     reordered.splice(result.destination.index, 0, moved);
 
     setMenuCategoryIds(reordered);
-    updateMenu(selectedMenu.id, { categories: reordered });
+    updateMenu(menuId, { categories: reordered });
   };
 
   const handleDeleteCategory = (id) => {
-    const updated = menuCategoryIds.filter(catId => catId !== id);
+    const updated = menuCategoryIds.filter((catId) => catId !== id);
     setMenuCategoryIds(updated);
-    updateMenu(selectedMenu.id, { categories: updated });
+    updateMenu(menuId, { categories: updated });
   };
 
   const handleAddSelectedCategories = () => {
     const updated = Array.from(new Set([...menuCategoryIds, ...selectedCategoryIds]));
     setMenuCategoryIds(updated);
-    updateMenu(selectedMenu.id, { categories: updated });
+    updateMenu(menuId, { categories: updated });
 
     setShowCategoryModal(false);
     setSelectedCategoryIds([]);
@@ -93,14 +104,16 @@ const MenuEditorPanel = ({ selectedMenu, updateMenu, deleteMenu, categories }) =
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto space-y-6 scrollbar-hide px-4 pt-4 pb-20">
         <div className="w-full max-w-5xl mx-auto">
+          {/* Editable Menu Title */}
           <EditableTitle
             isEditing={isEditingName}
             setIsEditing={setIsEditingName}
             title={menuName}
             setTitle={setMenuName}
-            onSave={(newName) => updateMenu(selectedMenu.id, { name: newName })}
+            onSave={(newName) => updateMenu(menuId, { name: newName })}
           />
 
+          {/* Scheduling and Description */}
           <MenuSettingsPanel
             selectedDays={selectedDays}
             toggleDay={toggleDay}
@@ -115,6 +128,7 @@ const MenuEditorPanel = ({ selectedMenu, updateMenu, deleteMenu, categories }) =
             updateMenu={updateMenu}
           />
 
+          {/* Category Table */}
           <MenuCategoriesTable
             menuName={menuName}
             menuCategoryIds={menuCategoryIds}
@@ -124,6 +138,7 @@ const MenuEditorPanel = ({ selectedMenu, updateMenu, deleteMenu, categories }) =
             onAddCategoryClick={() => setShowCategoryModal(true)}
           />
 
+          {/* Add Category Modal */}
           {showCategoryModal && (
             <AddCategoryModal
               categories={categories}
@@ -135,11 +150,12 @@ const MenuEditorPanel = ({ selectedMenu, updateMenu, deleteMenu, categories }) =
             />
           )}
 
+          {/* Delete Menu Button */}
           <div className="mt-8">
             <DeleteButton
               label="Delete Menu 🗑️"
               confirmMessage={`Are you sure you want to delete the "${selectedMenu.name}" menu? This cannot be undone.`}
-              onConfirm={() => deleteMenu(selectedMenu.id)}
+              onConfirm={() => deleteMenu(menuId)}
             />
           </div>
         </div>

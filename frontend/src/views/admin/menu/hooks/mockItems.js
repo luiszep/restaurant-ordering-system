@@ -1,6 +1,7 @@
-// hooks/mockItems.js
+// mockItems.js
+// Temporary mock item data for development/testing use in category assignment.
 
-const MOCK_ITEMS = [
+const mockItems = [
   { id: 1001, name: "Farmer’s Club Sandwich", price: 10.95 },
   { id: 1002, name: "Country Spice Sandwich", price: 9.00 },
   { id: 1003, name: "Classic BLT Sandwich", price: 7.95 },
@@ -12,4 +13,4 @@ const MOCK_ITEMS = [
   { id: 1009, name: "Farmstead Chilli", price: 11.95 },
 ];
 
-export default MOCK_ITEMS;
+export default mockItems;

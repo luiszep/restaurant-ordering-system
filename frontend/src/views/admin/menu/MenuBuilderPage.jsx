@@ -11,6 +11,7 @@ import { useCategoryState } from './hooks/useCategoryState';
 const MenuBuilderPage = () => {
   const { id: restaurantId } = useParams();
 
+  // Menu state
   const {
     menus,
     setMenus,
@@ -21,6 +22,7 @@ const MenuBuilderPage = () => {
     deleteMenu,
   } = useMenuState(restaurantId);
 
+  // Category state
   const {
     categories,
     setCategories,
@@ -28,24 +30,31 @@ const MenuBuilderPage = () => {
     setSelectedCategoryId,
   } = useCategoryState(restaurantId);
 
-  const selectedCategory = categories.find((cat) => cat.id === selectedCategoryId) || null;
+  const selectedCategory =
+    categories.find((cat) => cat.id === selectedCategoryId) || null;
 
   const updateCategory = (id, updates) => {
     setCategories((prev) =>
-      prev.map((cat) => (cat.id === id ? { ...cat, ...updates } : cat))
+      prev.map((cat) =>
+        cat.id === id ? { ...cat, ...updates } : cat
+      )
     );
   };
 
   const deleteCategory = (idToDelete) => {
+    // Remove from categories list
     setCategories((prev) => {
       const updated = prev.filter((cat) => cat.id !== idToDelete);
+
+      // Reset selection if deleted category was selected
       if (selectedCategoryId === idToDelete) {
         setSelectedCategoryId(updated[0]?.id || null);
       }
+
       return updated;
     });
 
-    // Remove category from all menus
+    // Remove references from all menus
     setMenus((prevMenus) =>
       prevMenus.map((menu) => ({
         ...menu,
@@ -61,7 +70,7 @@ const MenuBuilderPage = () => {
         <MenuBuilderTabs />
       </div>
 
-      {/* Main Body with Sidebar and Editor */}
+      {/* Main Panel */}
       <div className="flex-1 overflow-y-auto">
         <Routes>
           <Route
